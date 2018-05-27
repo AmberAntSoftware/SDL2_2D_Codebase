@@ -150,3 +150,98 @@ EVT_getScroll()
 //returns directional value and sets to zero
 EVT_consumeScroll()
 ```
+
+
+Graphical Examples
+==================
+
+Set the drawing color
+```
+RES_setColor(r,g,b,a)
+```
+
+Rectangles
+```
+//rectangle no fill
+RES_drawRect(x,y,width,height)
+//rectangle with fill
+RES_fillRect(x,y,width,height)
+```
+
+Lines
+```
+RES_drawLine(x1,y1,x2,y2)
+```
+
+Images -- Must be an XtraTexture container to use these [texture functions not yet implemented]
+```
+//draws the image at the location with native resolution
+void RES_drawImageAt(img, x, y);
+//dras the image at the location scaled to a rectangle of width, height
+void RES_drawImageScaledAt(img, x, y, width, height);
+//draws a section of image at the specified location at native resolution
+void RES_drawImageSectionAt(img, x, y, clipBoxX, clipBoxY, clipBoxWidth, clipBoxHeight);
+//draws a section of image at location scaled to a rectangle of width and height
+void RES_drawImageSectionScaledAt(img, x, y, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+```
+
+
+
+Full Working Example
+====================
+
+```
+#include <SDL2/SDL.h>
+
+#include "resources.h"
+#include "events.h"
+#include "audios.h"
+#include "memorys.h"
+#include "textury.h"
+#include "xfonts.h"
+
+int cx = 0;
+int cy = 0;
+int size = 20;
+
+//moves a square around on the screen using wasd
+void notAGame(){
+    RES_setColor(255,255,255,255);
+    RES_fillRect(0,0,RES_SCREEN_WIDTH,RES_SCREEN_HEIGHT);
+
+    RES_setColor(0,200,0,255);
+    RES_fillRect(cx,cy,size,size);
+
+    if(EVT_getKey(SDLK_a)){
+        cx-=size;
+    }
+    if(EVT_getKey(SDLK_d)){
+        cx+=size;
+    }
+    if(EVT_getKey(SDLK_s)){
+        cy+=size;
+    }
+    if(EVT_getKey(SDLK_w)){
+        cy-=size;
+    }
+}
+
+
+int main(int argc, char *argv[])
+{
+    //call this to init everything and SDL
+    RES_initFull();
+    
+    RES_initFull();
+    RES_setWindowTitle("THING");
+    RES_setWindowSize(800,600);
+    RES_centerWindow();
+    RES_showWindow();
+    
+    RES_setFPS(20);
+    RES_mainLoop(notAGame);
+    
+    RES_exit();
+    return 0;
+}
+```
