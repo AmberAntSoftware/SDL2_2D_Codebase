@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
     
     //... whatever you want to do here, probably setup your window
     
+    //frees resources and exits program cleanly
     RES_exit();
     return 0;
 }
@@ -229,7 +230,6 @@ void notAGame(){
 
 int main(int argc, char *argv[])
 {
-    //call this to init everything and SDL
     RES_initFull();
     
     RES_initFull();
