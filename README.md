@@ -2,6 +2,7 @@
 Externally high coupling, internally low coupling codebase for 2D graphical programming
 
 >>A quick and dirty approach for specificaly one window applications
+
 >>Direct access to the SDL pointers for the SDL_Renderer, SDL_Window, ect allows for more optimized code without the setup
 
 >>Lacking documentation and function descriptions
