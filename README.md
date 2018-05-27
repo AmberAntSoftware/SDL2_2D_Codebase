@@ -87,7 +87,7 @@ void graphicsLoop(){
 
 Interfacing Examples
 ====================
-***You may make your own window outside of the convience function, but you have to the function call `EVT_EventHandler(&EVT_event, {your_window}); and include tehe "events.h" header` to grab the events***
+***You may make your own window outside of the convience function, but you have to use the function call `EVT_EventHandler(&EVT_event, {your_window}); and include the "events.h" header` to grab the events***
 
 Taking input on every frame for the keyboard
 ```
