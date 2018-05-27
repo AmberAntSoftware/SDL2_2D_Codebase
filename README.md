@@ -87,7 +87,7 @@ void graphicsLoop(){
 
 Interfacing Examples
 ====================
-***You may make your own window outside of the convience function, but you have to assign RES_renderer AND RES_window to use the event system, and call `EVT_EventHandler(&EVT_event, RES_window);` to grab the events***
+***You may make your own window outside of the convience function, but you have to the function call `EVT_EventHandler(&EVT_event, {your_window}); and include tehe "events.h" header` to grab the events***
 
 Taking input on every frame for the keyboard
 ```
