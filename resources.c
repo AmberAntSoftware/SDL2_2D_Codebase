@@ -55,7 +55,7 @@ int RES_init(){
         if(SDL_Init(SDL_INIT_EVERYTHING) == -1){
             RES_exitErr("Could not initialize SDL");
         }
-        if(AUD_initAudio()){
+        if(AUD_initAudio(AUD_QUALITY_GAME)){
             printf("Could not initialize SDL_Mixer Audio\n");
         }
         if(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_TIF/*|IMG_INIT_WEBP*/) == -1){
@@ -135,7 +135,7 @@ void RES_exitErr(const char *msg){
 
 void RES_exit(){
     RES_cleanup();
-    AUD_exitAudio();
+    AUD_exit();
     RES_running = 0;
     MEM_exit();
     SDL_Quit();

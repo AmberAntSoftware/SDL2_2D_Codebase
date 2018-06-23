@@ -8,6 +8,8 @@
 #include "audios.h"
 #include "memorys.h"
 
+int AUD_SFXvolume = 100;
+
 static AUD_SFXCache *sfxCache = NULL;
 static AUD_SFXCache *lastCache = NULL;
 
@@ -135,4 +137,28 @@ AUD_SFX* AUD_newSFX(char* wavOggAiffRiffVOC){
 
     return (AUD_SFX*)sfx;
 
+}
+
+void AUD_setSFXVolume(int zero128){
+    if(zero128>-1&&zero128<129){
+        AUD_SFXvolume = zero128;
+    }
+}
+
+void AUD_playSFX(AUD_SFX *sfx){
+    if(sfx==NULL){
+        return;
+    }
+    Mix_VolumeChunk(sfx,AUD_SFXvolume);
+    Mix_PlayChannel( -1, sfx, 0 );
+}
+
+void AUD_playMusic(AUD_Music *music){
+    if(music==NULL){
+        return;
+    }
+    if(Mix_PlayingMusic()){
+        Mix_FadeOutMusic(500);
+    }
+    Mix_FadeInMusic(music,0,500);
 }
