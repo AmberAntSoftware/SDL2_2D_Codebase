@@ -27,7 +27,7 @@ void EVT_EventHandler(SDL_Event *event, const SDL_Window *window){
             break;
         case SDL_KEYUP:
             //printf("Key Release\n");
-            EVT_releaseEvent(event, window);
+            EVT_releaseKeyEvent(event, window);
             break;
         case SDL_QUIT:
             //Handle quit requests (like Ctrl-c). [LINUX Terminal Exit]
@@ -211,6 +211,12 @@ void EVT_pressEvent(const SDL_Event *event, const SDL_Window *window){
 }
 
 void EVT_releaseEvent(const SDL_Event *event, const SDL_Window *window){
+    if(event->button.button < 1024){
+        EVT_btn[event->button.button] = 0;
+    }
+}
+
+void EVT_releaseKeyEvent(const SDL_Event *event, const SDL_Window *window){
     if(event->key.keysym.sym < 1024){
         EVT_key[event->key.keysym.sym] = 0;
     } else if(event->key.keysym.sym >= SDLK_SCANCODE_MASK){

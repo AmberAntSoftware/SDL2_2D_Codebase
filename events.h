@@ -37,6 +37,7 @@ void EVT_EventHandler(SDL_Event *event, const SDL_Window *window);
 void EVT_keyEvent(const SDL_Event *event, const SDL_Window *window);
 void EVT_moveEvent(const SDL_Event *event, const SDL_Window *window);
 void EVT_pressEvent(const SDL_Event *event, const SDL_Window *window);
+void EVT_releaseKeyEvent(const SDL_Event *event, const SDL_Window *window);
 void EVT_releaseEvent(const SDL_Event *event, const SDL_Window *window);
 void EVT_scrollEvent(const SDL_Event *event, const SDL_Window *window);
 void EVT_windowEvent(const SDL_Event *event, const SDL_Window *window);
