@@ -135,7 +135,7 @@ void RES_exitErr(const char *msg){
 
 void RES_exit(){
     RES_cleanup();
-    Mix_Quit();
+    AUD_exitAudio();
     RES_running = 0;
     MEM_exit();
     SDL_Quit();

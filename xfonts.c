@@ -41,6 +41,7 @@ void FNT_setColor(char r, char g, char b, char a){
 void FNT_setFont(FNT_FontType *fontType){
     if(fontType != NULL){
         FNT_defFont = fontType;
+        FNT_defPt = fontType->pt;
     }
 }
 void FNT_setPt(int pt){
