@@ -10,11 +10,12 @@
 #include "memorys.h"
 #include "textury.h"
 
-#define RES_setWindowTitle(title) {SDL_SetWindowTitle(RES_window,title);}
-#define RES_setWindowSize(w, h) {SDL_SetWindowSize(RES_window,w,h);}
-#define RES_centerWindow() {SDL_SetWindowPosition(RES_window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED);}
-#define RES_showWindow() {SDL_ShowWindow(RES_window);}
-#define RES_hideWindow() {SDL_HideWindow(RES_window);}
+#define RES_setWindowTitle(title) SDL_SetWindowTitle(RES_window,title)
+#define RES_setWindowSize(w, h) SDL_SetWindowSize(RES_window,w,h)
+#define RES_centerWindow() SDL_SetWindowPosition(RES_window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED)
+#define RES_showWindow() SDL_ShowWindow(RES_window)
+#define RES_hideWindow() SDL_HideWindow(RES_window)
+#define RES_drawLine(x1,y1,x2,y2) SDL_RenderDrawLine(RES_renderer,x1,y1,x2,y2)
 
 SDL_Surface *RES_fontRAW;
 SDL_Texture *RES_font;
@@ -80,6 +81,11 @@ void RES_drawImageAt(const XtraTexture *img, const int x, const int y);
 void RES_drawImageScaledAt(const XtraTexture *img, const int x, const int y, const int sw, const int sh);
 void RES_drawImageSectionAt(const XtraTexture *img, int x, int y, int cx, int cy, int cw, int ch);
 void RES_drawImageSectionScaledAt(const XtraTexture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
+
+void RES_drawTextureAt(const SDL_Texture *img, const int x, const int y);
+void RES_drawTextureScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh);
+void RES_drawTextureSectionAt(const SDL_Texture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch);
+void RES_drawTextureSectionScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
 
 void RES_setStringColor(const int r, const int g, const int b, const int a);
 void RES_setStringColorInt(const int rgba);

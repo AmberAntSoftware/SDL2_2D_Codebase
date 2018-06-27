@@ -14,5 +14,9 @@
 #include "xfonts.h"
 
 char* STR_concat(char* str0, char* str1);
+char* STR_concatf0(char* str0_toFree, char* str1);
+char* STR_concatf2(char* str0, char* str1_toFree);
+char* STR_concatf3(char* str0_toFree, char* str1_toFree);
+char* STR_concatAll(int char_pointer_count, ...);
 
 #endif // STRINGYS_H_INCLUDED

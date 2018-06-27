@@ -299,6 +299,54 @@ void RES_drawImageSectionScaledAt(const XtraTexture *img, const int x, const int
     SDL_RenderCopy(RES_renderer, img->img, &s, &r);
 }
 
+
+
+void RES_drawTextureAt(const SDL_Texture *img, const int x, const int y){
+    SDL_Rect r;
+    r.x = x;
+    r.y = y;
+    r.w = img->w;
+    r.h = img->h;
+    SDL_RenderCopy(RES_renderer, img, NULL, &r);
+}
+
+void RES_drawTextureScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh){
+    SDL_Rect r;
+    r.x = x;
+    r.y = y;
+    r.w = sw;
+    r.h = sh;
+    SDL_RenderCopy(RES_renderer, img, NULL, &r);
+}
+
+void RES_drawTextureSectionAt(const SDL_Texture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch){
+    SDL_Rect s, r;
+    r.x = x;
+    r.y = y;
+    r.w = cw;
+    r.h = ch;
+    s.x = cx;
+    s.y = cy;
+    s.w = cw;
+    s.h = ch;
+    SDL_RenderCopy(RES_renderer, img->img, &s, &r);
+}
+
+void RES_drawTextureSectionScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch){
+    SDL_Rect s, r;
+    r.x = x;
+    r.y = y;
+    r.w = sw;
+    r.h = sh;
+    s.x = cx;
+    s.y = cy;
+    s.w = cw;
+    s.h = ch;
+    SDL_RenderCopy(RES_renderer, img, &s, &r);
+}
+
+
+
 void RES_drawString(const char *txt, const int pt, int x, int y){
     SDL_Rect ltr;
     ltr.x = 0;
