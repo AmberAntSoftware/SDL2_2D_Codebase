@@ -40,7 +40,6 @@ char* STR_concatf2(char* str0, char* str1_toFree){
     char *buffer = NULL;
     buffer = STR_concat(str0,str1_toFree);
 
-    SDL_free(str0_toFree);
     SDL_free(str1_toFree);
 
     return buffer;
@@ -72,7 +71,7 @@ char* STR_concatAll(int char_pointer_count, ...){
 
     int i;
     for(i = 0; i < char_pointer_count;i++){
-        buffer = STR_concatf3(buffer,va_arg ( arguments, char* ));
+        buffer = STR_concatf3(buffer,va_arg ( params, char* ));
     }
     ///
     va_end(params);

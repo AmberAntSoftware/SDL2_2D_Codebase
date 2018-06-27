@@ -305,8 +305,7 @@ void RES_drawTextureAt(const SDL_Texture *img, const int x, const int y){
     SDL_Rect r;
     r.x = x;
     r.y = y;
-    r.w = img->w;
-    r.h = img->h;
+    SDL_QueryTexture(img,NULL,NULL,&(r.w),&(r.h));
     SDL_RenderCopy(RES_renderer, img, NULL, &r);
 }
 
@@ -329,7 +328,7 @@ void RES_drawTextureSectionAt(const SDL_Texture *img, const int x, const int y, 
     s.y = cy;
     s.w = cw;
     s.h = ch;
-    SDL_RenderCopy(RES_renderer, img->img, &s, &r);
+    SDL_RenderCopy(RES_renderer, img, &s, &r);
 }
 
 void RES_drawTextureSectionScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch){
