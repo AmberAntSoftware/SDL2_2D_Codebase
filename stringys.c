@@ -10,6 +10,7 @@
 #include "memorys.h"
 
 char* STR_concat(char* str0, char* str1){
+
     int len0 = SDL_strlen(str0);
     int len1 = SDL_strlen(str1);
     int len = len0+len1;
@@ -19,8 +20,8 @@ char* STR_concat(char* str0, char* str1){
     len+=1;
     char* buffer = SDL_malloc(len);
 
-    SDL_strlcpy(buffer,str0,len0);
-    SDL_strlcat(buffer,str1,len1);
+    SDL_strlcpy(buffer,str0,len);
+    SDL_strlcat(buffer,str1,len);
 
     return buffer;
 
@@ -62,7 +63,7 @@ char* STR_concatAll(int char_pointer_count, ...){
     if(buffer==NULL){
         return NULL;
     }
-    buffer[0] = NULL;
+    buffer[0] = (char)NULL;
 
 
     va_list params;

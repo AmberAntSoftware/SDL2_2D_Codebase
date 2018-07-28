@@ -36,21 +36,18 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="./stringys.c">
+		<Unit filename="./cmm.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="./stringys.h" />
 		<Unit filename="audios.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="audios.h" />
+		<Unit filename="cmm.h" />
 		<Unit filename="events.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="events.h" />
-		<Unit filename="main.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="memorys.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -59,6 +56,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="resources.h" />
+		<Unit filename="stringys.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stringys.h" />
 		<Unit filename="textury.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -85,6 +85,7 @@ int EVT_consumeLastKey(){
 }
 
 int EVT_getKey(Uint32 keyID){
+    keyID=EVT_getSDLK(keyID);
     if(keyID >= MAX_EVENT_CACHE){
         return 0;
     }
@@ -92,6 +93,7 @@ int EVT_getKey(Uint32 keyID){
 }
 
 int EVT_consumeKey(Uint32 keyID){
+    keyID=EVT_getSDLK(keyID);
     if(keyID >= MAX_EVENT_CACHE){
         return 0;
     }

@@ -9,6 +9,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+///mainly for internal use; can be used outside to get key code numbers through SDLK_[key]
+#define EVT_getSDLK(X)  ((X | SDLK_SCANCODE_MASK)^SDLK_SCANCODE_MASK)
+
 SDL_Event EVT_event;
 Uint8 EVT_key[MAX_EVENT_CACHE];
 Uint8 EVT_btn[MAX_EVENT_CACHE];

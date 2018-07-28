@@ -17,6 +17,14 @@
 #define RES_hideWindow() SDL_HideWindow(RES_window)
 #define RES_drawLine(x1,y1,x2,y2) SDL_RenderDrawLine(RES_renderer,x1,y1,x2,y2)
 
+#define RES_drawRectR(rectPointer) SDL_RenderFillRect(RES_renderer, rectPointer)
+#define RES_fillRectR(rectPointer) SDL_RenderFillRect(RES_renderer, rectPointer)
+
+#define RES_inRectR(rectPointer, pointx, pointy) RES_inRect(rectPointer->x, rectPointer->y, rectPointer->w, rectPointer->h pointx,pointy)
+#define RES_drawImageScaledAtR(imgPtr, rectPointer) RES_drawImageScaledAt(imgPtr, rectPointer->x, rectPointer->y, rectPointer->w, rectPointer->h)
+#define RES_drawTextureScaledAtR(texPtr, rectPointer) RES_drawTextureScaledAt(texPtr, rectPointer->x, rectPointer->y, rectPointer->w, rectPointer->h)
+
+
 SDL_Surface *RES_fontRAW;
 SDL_Texture *RES_font;
 SDL_Texture *RES_fontWhite;
@@ -75,23 +83,30 @@ void RES_setColorInt(const int rgba);
 void RES_drawRect(const int x, const int y, const int w, const int h);
 void RES_fillRect(const int x, const int y, const int w, const int h);
 
-void RES_drawImageRect(const XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place);
+void inline RES_drawImageRect(const XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place);
 
 void RES_drawImageAt(const XtraTexture *img, const int x, const int y);
 void RES_drawImageScaledAt(const XtraTexture *img, const int x, const int y, const int sw, const int sh);
 void RES_drawImageSectionAt(const XtraTexture *img, int x, int y, int cx, int cy, int cw, int ch);
 void RES_drawImageSectionScaledAt(const XtraTexture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
 
-void RES_drawTextureAt(const SDL_Texture *img, const int x, const int y);
-void RES_drawTextureScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh);
-void RES_drawTextureSectionAt(const SDL_Texture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch);
-void RES_drawTextureSectionScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
+void RES_drawTextureAt(SDL_Texture *img, const int x, const int y);
+void RES_drawTextureScaledAt(SDL_Texture *img, const int x, const int y, const int sw, const int sh);
+void RES_drawTextureSectionAt(SDL_Texture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch);
+void RES_drawTextureSectionScaledAt(SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
 
+int RES_inRect(const int x, const int y, const int w, const int h, const int pointx, const int pointy);
+
+
+
+
+///DEPRECATED SET
 void RES_setStringColor(const int r, const int g, const int b, const int a);
 void RES_setStringColorInt(const int rgba);
 void RES_drawString(const char *txt, const int pt, int x, const int y);
 void RES_drawStringWhite(const char *txt, const int pt, int x, const int y);
-int RES_inRect(const int x, const int y, const int w, const int h, const int pointx, const int pointy);
+
+
 
 
 

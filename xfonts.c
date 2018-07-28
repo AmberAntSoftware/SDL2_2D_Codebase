@@ -86,10 +86,10 @@ void FNT_XdrawText(char *text, FNT_FontType *type, int x, int y, int pt, int eff
     dest.h = (int)(scale * type->letters[42]->glyph->h);
     //printf("i: %i\n",length);
     for(i = 0; i < length; i++){
-        if(type->letters[text[i]] != NULL){
-            dest.w = (int)(scale * type->letters[text[i]]->glyph->w);
-            SDL_SetTextureColorMod(type->letters[text[i]]->glyph->img, cr, cg, cb);
-            RES_drawImageRect(type->letters[text[i]]->glyph, NULL, &dest);
+        if(type->letters[(unsigned char)text[i]] != NULL){
+            dest.w = (int)(scale * type->letters[(unsigned char)text[i]]->glyph->w);
+            SDL_SetTextureColorMod(type->letters[(unsigned char)text[i]]->glyph->img, cr, cg, cb);
+            RES_drawImageRect(type->letters[(unsigned char)text[i]]->glyph, NULL, &dest);
             dest.x += dest.w;
         }
     }
@@ -113,16 +113,16 @@ void FNT_XdrawText_kern(char *text, FNT_FontType *type, int x, int y, int pt, in
     scale = (pt / (1.0f * type->pt));
     dest.h = (int)(scale * type->letters[32]->glyph->h);
     for(i = 0; i < length; i++){
-        if(type->letters[text[i]] != NULL){
-            dest.w = (int)(scale * type->letters[text[i]]->glyph->w);
-            SDL_SetTextureColorMod(type->letters[text[i]]->glyph->img, cr, cg, cb);
-            if(type->letters[text[i]] != NULL){
+        if(type->letters[(unsigned char)text[i]] != NULL){
+            dest.w = (int)(scale * type->letters[(unsigned char)text[i]]->glyph->w);
+            SDL_SetTextureColorMod(type->letters[(unsigned char)text[i]]->glyph->img, cr, cg, cb);
+            if(type->letters[(unsigned char)text[i]] != NULL){
                 if(type->letters[last] != NULL){
-                    dest.x += (int)(type->letters[last]->kernings[text[i]] * scale);
+                    dest.x += (int)(type->letters[last]->kernings[(unsigned char)text[i]] * scale);
                 }
                 last = text[i];
             }
-            RES_drawImageRect(type->letters[text[i]]->glyph, NULL, &dest);
+            RES_drawImageRect(type->letters[(unsigned char)text[i]]->glyph, NULL, &dest);
         }
     }
     if(dest.x += type->letters[last] != NULL){

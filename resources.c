@@ -251,7 +251,8 @@ void RES_fillRect(const int x, const int y, const int w, const int h){
     SDL_RenderFillRect(RES_renderer, &r);
 }
 
-void RES_drawImageRect(const XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place){
+
+void inline RES_drawImageRect(const XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place){
     SDL_RenderCopy(RES_renderer, img->img, src_clip, dest_place);
 }
 
@@ -301,7 +302,7 @@ void RES_drawImageSectionScaledAt(const XtraTexture *img, const int x, const int
 
 
 
-void RES_drawTextureAt(const SDL_Texture *img, const int x, const int y){
+void RES_drawTextureAt(SDL_Texture *img, const int x, const int y){
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -309,7 +310,7 @@ void RES_drawTextureAt(const SDL_Texture *img, const int x, const int y){
     SDL_RenderCopy(RES_renderer, img, NULL, &r);
 }
 
-void RES_drawTextureScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh){
+void RES_drawTextureScaledAt(SDL_Texture *img, const int x, const int y, const int sw, const int sh){
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -318,7 +319,7 @@ void RES_drawTextureScaledAt(const SDL_Texture *img, const int x, const int y, c
     SDL_RenderCopy(RES_renderer, img, NULL, &r);
 }
 
-void RES_drawTextureSectionAt(const SDL_Texture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch){
+void RES_drawTextureSectionAt(SDL_Texture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch){
     SDL_Rect s, r;
     r.x = x;
     r.y = y;
@@ -331,7 +332,7 @@ void RES_drawTextureSectionAt(const SDL_Texture *img, const int x, const int y, 
     SDL_RenderCopy(RES_renderer, img, &s, &r);
 }
 
-void RES_drawTextureSectionScaledAt(const SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch){
+void RES_drawTextureSectionScaledAt(SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch){
     SDL_Rect s, r;
     r.x = x;
     r.y = y;
