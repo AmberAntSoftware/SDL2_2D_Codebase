@@ -3,13 +3,11 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-
 #include <math.h>
 
 #include "resources.h"
 #include "events.h"
 #include "audios.h"
-#include "memorys.h"
 #include "textury.h"
 #include "xfonts.h"
 
@@ -47,7 +45,7 @@ Uint32 RES_SCREEN_HEIGHT = 600;
 Uint8 RES_running = 1;
 Uint8 RES_FPS = 0;
 
-int RES_init(){
+int RES_initSDL(){
     if(!SDL_WasInit(SDL_INIT_EVERYTHING)){
 #if WIN32
         SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
@@ -65,11 +63,11 @@ int RES_init(){
     return 0;
 }
 
-int RES_initFull(){
-    MEM_init();
+#define RES_initFull RES_init
+int RES_init(){
+    RES_initSDL();
     TEX_init();
     FNT_init();
-    RES_init();
     if(RES_initWindow()){
         RES_exitErr("Could not Initialize SDL [Full]");
         return -1;
@@ -252,11 +250,11 @@ void RES_fillRect(const int x, const int y, const int w, const int h){
 }
 
 
-void inline RES_drawImageRect(const XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place){
+void inline RES_drawImageRect(const TEX_XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place){
     SDL_RenderCopy(RES_renderer, img->img, src_clip, dest_place);
 }
 
-void RES_drawImageAt(const XtraTexture *img, const int x, const int y){
+void RES_drawImageAt(const TEX_XtraTexture *img, const int x, const int y){
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -265,7 +263,7 @@ void RES_drawImageAt(const XtraTexture *img, const int x, const int y){
     SDL_RenderCopy(RES_renderer, img->img, &img->clip_rect, &r);
 }
 
-void RES_drawImageScaledAt(const XtraTexture *img, const int x, const int y, const int sw, const int sh){
+void RES_drawImageScaledAt(const TEX_XtraTexture *img, const int x, const int y, const int sw, const int sh){
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -274,7 +272,7 @@ void RES_drawImageScaledAt(const XtraTexture *img, const int x, const int y, con
     SDL_RenderCopy(RES_renderer, img->img, &img->clip_rect, &r);
 }
 
-void RES_drawImageSectionAt(const XtraTexture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch){
+void RES_drawImageSectionAt(const TEX_XtraTexture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch){
     SDL_Rect s, r;
     r.x = x;
     r.y = y;
@@ -287,7 +285,7 @@ void RES_drawImageSectionAt(const XtraTexture *img, const int x, const int y, co
     SDL_RenderCopy(RES_renderer, img->img, &s, &r);
 }
 
-void RES_drawImageSectionScaledAt(const XtraTexture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch){
+void RES_drawImageSectionScaledAt(const TEX_XtraTexture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch){
     SDL_Rect s, r;
     r.x = x;
     r.y = y;

@@ -1,3 +1,5 @@
+#include <2DBase_defines.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -5,39 +7,29 @@
 #include <SDL2/SDL_image.h>
 
 #include "resources.h"
-#include "memorys.h"
 
-//static MEM_Block* rects = NULL;
-//static MEM_Block* texts = NULL;
-//static MEM_Block* xtexts = NULL;
-//static MEM_Block* surfs = NULL;
+void TEX_initDump(){
+#ifdef ALLOW_TEXTURES && ALLOW_TEXTURES
+#ifdef ALLOW_TEXTURE_MEMORY_DUMP && ALLOW_TEXTURE_MEMORY_DUMP
 
-void TEX_init(){
-    //rects = MEM_newBlock();
-    //texts = MEM_newBlock();
-    //xtexts = MEM_newBlock();
-    //surfs = MEM_newBlock();
+#endif // ALLOW_RESOURCES_MEMORY_DUMP
+#endif // ALLOW_TEXTURES
 }
 
-void TEX_exit(){ //handled in auto delete -- dereferences could cause problems otherwise
-    //MEM_freeBlock(rects);
-    //MEM_freeBlock(texts);
-    //MEM_freeBlock(xtexts);
-    //MEM_freeBlock(surfs);
-}
+void TEX_exit(){
+#ifdef ALLOW_TEXTURES && ALLOW_TEXTURES
 
-SDL_Rect *TEX_newRect(){
-    /*SDL_Rect* rect = MEM_mallocTo(rects,malloc(sizeof(SDL_Rect)),NULL);
-    if(rect!=NULL){
-        rect->x=0;rect->y=0;rect->w=0;rect->h=0;
-        return rect;
-    }
-    printf("Could Not Generate empty SDL_Rect");*/
-    return NULL;
+
+#ifdef ALLOW_TEXTURE_MEMORY_DUMP && ALLOW_TEXTURE_MEMORY_DUMP
+
+#endif // ALLOW_RESOURCES_MEMORY_DUMP
+#endif // ALLOW_TEXTURES
+
 }
 
 
-SDL_Texture *TEX_loadImageIntoTextureFromFile(const char *file){
+SDL_Texture *TEX_newTextureFromFile(const char *file){
+#ifdef ALLOW_TEXTURES
     SDL_Surface *dump = IMG_Load(file);
     if(dump != NULL){
         SDL_Texture *dst = SDL_CreateTextureFromSurface(RES_renderer, dump);
@@ -52,13 +44,18 @@ SDL_Texture *TEX_loadImageIntoTextureFromFile(const char *file){
     } else {
         printf("Error Loading File: %s\n", file);
     }
+#endif // ALLOW_TEXTURES
     return NULL;
 }
 
-XtraTexture *TEX_loadImageIntoXtraTextureFromFile(const char *file){
+SDL_Texture *TEX_newTexture(const SDL_Surface *src){
+    SDL_CreateTextureFromSurface(RES_renderer, src);
+}
+
+TEX_XtraTexture *TEX_newXtraTextureFromFile(const char *file){
     SDL_Surface *dump = IMG_Load(file);
     if(dump != NULL){
-        XtraTexture *dst = TEX_newXtraTexture(dump);
+        TEX_XtraTexture *dst = TEX_newXtraTexture(dump);
         SDL_FreeSurface(dump);
         if(dst == NULL || dst->img == NULL){
             printf("Could Not Load \"%s\" Into A Usable Format\n", file);
@@ -74,11 +71,11 @@ XtraTexture *TEX_loadImageIntoXtraTextureFromFile(const char *file){
     return NULL;
 }
 
-XtraTexture *TEX_newXtraTexture(SDL_Surface *src){
+TEX_XtraTexture *TEX_newXtraTexture(SDL_Surface *src){
     if(src == NULL){
         return NULL;
     }
-    XtraTexture *xtex = SDL_calloc(sizeof(XtraTexture), 1);
+    TEX_XtraTexture *xtex = SDL_calloc(sizeof(TEX_XtraTexture), 1);
     if(xtex == NULL){
         return NULL;
     }
@@ -106,8 +103,24 @@ XtraTexture *TEX_newXtraTexture(SDL_Surface *src){
     return xtex;
 }
 
-void TEX_freeXtraTexture(void *xtexx){
-    XtraTexture *xtex = (XtraTexture *)xtexx;
+
+
+
+
+void TEX_freeXtraTexture(TEX_XtraTexture *xtex){
+    if(xtex == NULL){
+        return;
+    }
+    if(xtex->img != NULL){
+        SDL_DestroyTexture(xtex->img);
+    }
+    if(xtex->raw!=NULL){
+        SDL_FreeSurface(xtex->raw);
+    }
+    SDL_free(xtex);
+}
+
+void TEX_freeXtraTextureNotSurface(TEX_XtraTexture *xtex){
     if(xtex == NULL){
         return;
     }

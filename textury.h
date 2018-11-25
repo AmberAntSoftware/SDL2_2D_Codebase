@@ -1,33 +1,33 @@
 #ifndef TEXTURY_H_INCLUDED
 #define TEXTURY_H_INCLUDED
 
-typedef struct XtraTexture {
+#include <resources.h>
+
+#ifdef ALLOW_TEXTURE_MEMORY_DUMP
+#if ALLOW_TEXTURE_MEMORY_DUMP == 1
+eee
+#endif // ALLOW_TEXTURE_MEMORY_DUMP
+#endif // ALLOW_TEXTURE_MEMORY_DUMP
+static struct TEX_MemDump{
+    struct TEX_MemDump *node;
+    TEX_MemDump *leaf;
+} TEX_MemDump;
+
+typedef struct TEX_XtraTexture {
+    SDL_Surface *raw;
     SDL_Texture *img;
     SDL_Rect clip_rect;
     int w;
     int h;
-} XtraTexture;
+} TEX_XtraTexture;
 
-/*typedef struct LayeredMap{
-    XtraTexture *img;
-    SDL_Surface *col;
-    struct LayeredMap *next;
-}LayeredMap;
+SDL_Texture *TEX_newTextureFromFile(const char *file);
+SDL_Texture *TEX_newTexture(const SDL_Surface *src);
 
-typedef struct SpriteSheet{
-    SDL_Rect *collision;//actual collision/hitbox
-    SDL_Rect *scaled;//destination drawn
-    SDL_Rect *clip;//image part to grab
-    XtraTexture *img;
-}SpriteSheet;*/
+TEX_XtraTexture *TEX_newXtraTextureFromFile(const char *file);
+TEX_XtraTexture *TEX_newXtraTexture(SDL_Surface *src);
 
-void TEX_init();
-void TEX_exit();
-
-SDL_Texture *TEX_loadImageIntoTextureFromFile(const char *file);
-XtraTexture *TEX_loadImageIntoXtraTextureFromFile(const char *file);
-SDL_Rect *TEX_newRect();
-XtraTexture *TEX_newXtraTexture(SDL_Surface *src);
-void TEX_freeXtraTexture(void *xtexx);
+void TEX_freeXtraTexture(TEX_XtraTexture *xtex);
+void TEX_freeXtraTextureNotSurface(TEX_XtraTexture *xtex);
 
 #endif // TEXTURY_H_INCLUDED

@@ -17,6 +17,16 @@
 #define FNT_UNDERLINE 1
 #define FNT_STRIKEOUT 2
 
+#define FNT_drawText(textPtr, x, y) {FNT_drawText(text, x, y, FNT_defPt);}
+#define FNT_drawText_kern(textPtr, x, y) {FNT_drawText_ker(text, x, y, FNT_defPt);}
+
+#define FNT_drawText_underline(textPtr, x, y) {FNT_XdrawText(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_UNDERLINE);}
+#define FNT_drawText_underline_kern(textPtr, x, y) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_UNDERLINE);}
+#define FNT_drawText_strike(textPtr, x, y) {FNT_XdrawText(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_STRIKEOUT);}
+#define FNT_drawText_strike_kern(textPtr, x, y) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_STRIKEOUT);}
+#define FNT_drawText_strike_underline(textPtr, x, y) {FNT_XdrawText(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_STRIKEOUT|FNT_UNDERLINE);}
+#define FNT_drawText_strike_underline_kern(textPtr, x, y) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_STRIKEOUT|FNT_UNDERLINE);}
+
 #define FNT_drawText_underline(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_UNDERLINE);}
 #define FNT_drawText_underline_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_UNDERLINE);}
 #define FNT_drawText_strike(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT);}
@@ -24,8 +34,14 @@
 #define FNT_drawText_strike_underline(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT|FNT_UNDERLINE);}
 #define FNT_drawText_strike_underline_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT|FNT_UNDERLINE);}
 
+static struct FNT_MemDump{
+    struct FNT_MemDump *node;
+    TEX_MemDump *leaf;
+} FNT_MemDump;
+
+
 typedef struct FNT_Letter {
-    XtraTexture *glyph;
+    TEX_XtraTexture *glyph;
     int kernings[256];//95 32-126 visible characters [inclusive]
 } FNT_Letter;
 
@@ -70,7 +86,7 @@ void FNT_XdrawEffects(FNT_FontType *type, SDL_Rect *dest, int x, float scale, in
 //void FNT_drawText_kern(char *text,FNT_FontType *type, int x, int y, int pt, int effect);
 
 void FNT_setColor(char r, char g, char b, char a);
-void FNT_setFont(FNT_FontType *fontType);
+void FNT_setFontType(FNT_FontType *fontType);
 void FNT_setPt(int pt);
 void FNT_setEffects(int effects);
 
@@ -82,7 +98,7 @@ FNT_FontType *FNT_newFontType(TTF_Font *font, int style, int maxPt);
 FNT_Letter *FNT_newLetter(TTF_Font *font, char letter);
 void FNT_calcLetterSpace(TTF_Font *font, FNT_FontType *cache, FNT_Letter *store, char letter);
 
-void FNT_freeFont(void *font);
+void FNT_freeFont(FNT_Font *font);
 void FNT_freeFontType(FNT_FontType *fontt);
 void FNT_freeLetter(FNT_Letter *letter);
 

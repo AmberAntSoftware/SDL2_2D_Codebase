@@ -12,6 +12,24 @@
 ///mainly for internal use; can be used outside to get key code numbers through SDLK_[key]
 #define EVT_getSDLK(X)  ((X | SDLK_SCANCODE_MASK)^SDLK_SCANCODE_MASK)
 
+typedef struct WindowEvents {
+
+    //SDL_Event EVT_event;
+    Uint8 EVT_key[MAX_EVENT_CACHE];
+    Uint8 EVT_btn[MAX_EVENT_CACHE];
+    Uint8 EVT_mov[MAX_EVENT_CACHE];
+    //SDL_Point mxy;
+    //SDL_Point pxy;
+    Sint32 EVT_mx;
+    Sint32 EVT_my;
+    Sint32 EVT_px;
+    Sint32 EVT_py;
+    Sint32 EVT_scroll;
+    Sint32 EVT_lastKey;
+    Sint32 EVT_lastButton;
+
+} WindowEvents;
+
 SDL_Event EVT_event;
 Uint8 EVT_key[MAX_EVENT_CACHE];
 Uint8 EVT_btn[MAX_EVENT_CACHE];
