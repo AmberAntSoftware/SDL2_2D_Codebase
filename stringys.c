@@ -7,14 +7,13 @@
 #include <SDL2/SDL.h>
 
 #include "resources.h"
-#include "memorys.h"
 
 char* STR_concat(char* str0, char* str1){
 
     int len0 = SDL_strlen(str0);
     int len1 = SDL_strlen(str1);
     int len = len0+len1;
-    if(len > 999999999){
+    if(len > 999999999 || len < 1){
         return NULL;
     }
     len+=1;
@@ -63,7 +62,7 @@ char* STR_concatAll(int char_pointer_count, ...){
     if(buffer==NULL){
         return NULL;
     }
-    buffer[0] = (char)NULL;
+    buffer[0] = '\0';
 
 
     va_list params;

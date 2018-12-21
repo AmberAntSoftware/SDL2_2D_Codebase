@@ -1,10 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <SDL2/SDL.h>
+
+#include "2DBase_defines.h"
 
 #include "resources.h"
 #include "events.h"
+
+static Uint32 lastWindow = 1;
+
+static void EVT_ifWindowChanged(Uint32 eventWindow){
+    if(eventWindow==lastWindow){
+        return;
+    }
+
+    lastWindow = eventWindow;
+
+#if ALLOW_EVENTS_WIPING_ON_SWITCH
+    EVT_mx = -1;
+    EVT_my = -1;
+    EVT_px = -1;
+    EVT_py = -1;
+    EVT_scroll = 0;
+    EVT_lastKey = -1;
+    EVT_lastButton = -1;
+
+    Uint32 i;
+    for(i = 0; i < MAX_EVENT_CACHE; i++){
+        EVT_key[i] = 0;
+        EVT_btn[i] = 0;
+        EVT_mov[i] = 0;
+    }
+#endif // ALLOW_EVENTS_WIPING_ON_SWITCH
+}
 
 SDL_Event EVT_event;
 Uint8 EVT_key[MAX_EVENT_CACHE];
@@ -18,37 +46,44 @@ Sint32 EVT_scroll = 0;
 Sint32 EVT_lastKey = -1;
 Sint32 EVT_lastButton = -1;
 
+
+
 void EVT_EventHandler(SDL_Event *event, const SDL_Window *window){
     while(SDL_PollEvent(event)){
+        EVT_ifWindowChanged(event->window.windowID);
+
         switch(EVT_event.type){
         case SDL_KEYDOWN:
             //printf("Key Press\n");
-            EVT_keyEvent(event, window);
+            EVT_keyPressEvent(event, window);
             break;
         case SDL_KEYUP:
             //printf("Key Release\n");
-            EVT_releaseKeyEvent(event, window);
+            EVT_keyReleaseEvent(event, window);
             break;
         case SDL_QUIT:
             //Handle quit requests (like Ctrl-c). [LINUX Terminal Exit]
-            RES_exit();
-            RES_exitDef("Exiting SDL\n");
+            if(lastWindow==event->window.windowID){
+                RES_running = 0;
+            }
+            ///RES_exit();
+            ///RES_exitProcessDef("Exiting SDL\n");
             break;
         case SDL_MOUSEMOTION:
             //printf("Mouse Move\n");
-            EVT_moveEvent(event, window);
+            EVT_mouseMoveEvent(event, window);
             break;
         case SDL_WINDOWEVENT:
             EVT_windowEvent(event, window);
             break;
         case SDL_MOUSEBUTTONDOWN:
-            EVT_pressEvent(event, window);
+            EVT_mousePressEvent(event, window);
             break;
         case SDL_MOUSEBUTTONUP:
-            EVT_releaseEvent(event, window);
+            EVT_mouseReleaseEvent(event, window);
             break;
         case SDL_MOUSEWHEEL:
-            EVT_scrollEvent(event, window);
+            EVT_mouseScrollEvent(event, window);
             break;
         case SDL_TEXTEDITING:
             //printf("Text Edit || Keyboard Focus Change\n");
@@ -132,7 +167,7 @@ int EVT_consumeButton(Uint32 button){
 }
 
 
-void EVT_keyEvent(const SDL_Event *event, const SDL_Window *window){
+void EVT_keyPressEvent(const SDL_Event *event, const SDL_Window *window){
     if(event->key.keysym.sym < 1024){
         EVT_key[event->key.keysym.sym] = 1;
         EVT_lastKey = event->key.keysym.sym;
@@ -168,7 +203,7 @@ void EVT_keyEvent(const SDL_Event *event, const SDL_Window *window){
     }*/
 }
 
-void EVT_moveEvent(const SDL_Event *event, const SDL_Window *window){
+void EVT_mouseMoveEvent(const SDL_Event *event, const SDL_Window *window){
     EVT_mx = event->motion.x;
     EVT_my = event->motion.y;
     if(event->motion.state < 1024){
@@ -203,7 +238,7 @@ void EVT_moveEvent(const SDL_Event *event, const SDL_Window *window){
     }*/
 }
 
-void EVT_pressEvent(const SDL_Event *event, const SDL_Window *window){
+void EVT_mousePressEvent(const SDL_Event *event, const SDL_Window *window){
     EVT_lastButton = event->button.button;
     EVT_px = event->button.x;
     EVT_py = event->button.y;
@@ -212,13 +247,13 @@ void EVT_pressEvent(const SDL_Event *event, const SDL_Window *window){
     }
 }
 
-void EVT_releaseEvent(const SDL_Event *event, const SDL_Window *window){
+void EVT_mouseReleaseEvent(const SDL_Event *event, const SDL_Window *window){
     if(event->button.button < 1024){
         EVT_btn[event->button.button] = 0;
     }
 }
 
-void EVT_releaseKeyEvent(const SDL_Event *event, const SDL_Window *window){
+void EVT_keyReleaseEvent(const SDL_Event *event, const SDL_Window *window){
     if(event->key.keysym.sym < 1024){
         EVT_key[event->key.keysym.sym] = 0;
     } else if(event->key.keysym.sym >= SDLK_SCANCODE_MASK){
@@ -229,7 +264,7 @@ void EVT_releaseKeyEvent(const SDL_Event *event, const SDL_Window *window){
     }
 }
 
-void EVT_scrollEvent(const SDL_Event *event, const SDL_Window *window){
+void EVT_mouseScrollEvent(const SDL_Event *event, const SDL_Window *window){
     /*if(event->wheel.y<0){
 
     }else{
@@ -255,13 +290,17 @@ void EVT_windowEvent(const SDL_Event *event, const SDL_Window *window){
         break;
     case SDL_WINDOWEVENT_RESIZED:
         //SDL_Log("Window %d resized to %dx%d",event->window.windowID, event->window.data1,event->window.data2);
-        RES_SCREEN_WIDTH = event->window.data1;
-        RES_SCREEN_HEIGHT = event->window.data2;
+        if(lastWindow==event->window.windowID){
+            RES_SCREEN_WIDTH = event->window.data1;
+            RES_SCREEN_HEIGHT = event->window.data2;
+        }
         break;
     case SDL_WINDOWEVENT_SIZE_CHANGED:
         //SDL_Log("Window %d size changed to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
-        RES_SCREEN_WIDTH = event->window.data1;
-        RES_SCREEN_HEIGHT = event->window.data2;
+        if(lastWindow==event->window.windowID){
+            RES_SCREEN_WIDTH = event->window.data1;
+            RES_SCREEN_HEIGHT = event->window.data2;
+        }
         break;
     case SDL_WINDOWEVENT_MINIMIZED:
         //SDL_Log("Window %d minimized", event->window.windowID);
@@ -289,6 +328,9 @@ void EVT_windowEvent(const SDL_Event *event, const SDL_Window *window){
         /*if(SDL_GetWindowID(EVT_window)==event->window.windowID){
             RES_running = 0;
         }*/
+        if(lastWindow==event->window.windowID){
+            RES_running = 0;
+        }
         break;
 #if SDL_VERSION_ATLEAST(2, 0, 5)
     case SDL_WINDOWEVENT_TAKE_FOCUS:

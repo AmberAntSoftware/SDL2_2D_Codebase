@@ -4,9 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 
-
 #include "audios.h"
-#include "memorys.h"
 
 int AUD_SFXvolume = 100;
 

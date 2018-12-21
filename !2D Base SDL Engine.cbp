@@ -36,22 +36,20 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="./cmm.c">
-			<Option compilerVar="CC" />
-		</Unit>
+		<Unit filename="2DBase_defines.h" />
 		<Unit filename="audios.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="audios.h" />
-		<Unit filename="cmm.h" />
 		<Unit filename="events.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="events.h" />
-		<Unit filename="memorys.c">
+		<Unit filename="internalData/5bit_font_clear.png.base10" />
+		<Unit filename="internaldata/data.h" />
+		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="memorys.h" />
 		<Unit filename="resources.c">
 			<Option compilerVar="CC" />
 		</Unit>

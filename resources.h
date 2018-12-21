@@ -7,7 +7,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include "memorys.h"
 #include "textury.h"
 
 #define RES_setWindowTitle(title) SDL_SetWindowTitle(RES_window,title)
@@ -24,6 +23,25 @@
 #define RES_drawImageScaledAtR(imgPtr, rectPointer) RES_drawImageScaledAt(imgPtr, rectPointer->x, rectPointer->y, rectPointer->w, rectPointer->h)
 #define RES_drawTextureScaledAtR(texPtr, rectPointer) RES_drawTextureScaledAt(texPtr, rectPointer->x, rectPointer->y, rectPointer->w, rectPointer->h)
 
+typedef struct RES_MemDump{
+    struct TEX_MemDump *node;
+    struct RES_ResourceState *leaf;
+} RES_MemDump;
+
+typedef struct RES_ResourceState {
+
+    SDL_Window *window;
+    SDL_Surface *screen;
+    SDL_Renderer *renderer;
+    SDL_Texture *texture;
+
+    Uint32 SCREEN_WIDTH;
+    Uint32 SCREEN_HEIGHT;
+
+    Uint8 running;
+    Uint8 FPS;
+
+} RES_ResourceState;
 
 SDL_Surface *RES_fontRAW;
 SDL_Texture *RES_font;
@@ -55,6 +73,8 @@ Uint32 RES_SCREEN_HEIGHT;
 Uint8 RES_running;
 Uint8 RES_FPS;
 
+Uint32 RES_currentWindow;
+
 int RES_init();
 int RES_initFull();
 
@@ -67,8 +87,8 @@ void RES_showWindow();*/
 
 int RES_initResources();
 
-void RES_exitDef(const char *msg);
-void RES_exitErr(const char *msg);
+void RES_exitProcessDef(const char *msg);
+void RES_exitProcessErr(const char *msg);
 
 void RES_cleanup();
 void RES_exit();
@@ -83,12 +103,12 @@ void RES_setColorInt(const int rgba);
 void RES_drawRect(const int x, const int y, const int w, const int h);
 void RES_fillRect(const int x, const int y, const int w, const int h);
 
-void inline RES_drawImageRect(const XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place);
+void RES_drawImageRect(const TEX_XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place);
 
-void RES_drawImageAt(const XtraTexture *img, const int x, const int y);
-void RES_drawImageScaledAt(const XtraTexture *img, const int x, const int y, const int sw, const int sh);
-void RES_drawImageSectionAt(const XtraTexture *img, int x, int y, int cx, int cy, int cw, int ch);
-void RES_drawImageSectionScaledAt(const XtraTexture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
+void RES_drawImageAt(const TEX_XtraTexture *img, const int x, const int y);
+void RES_drawImageScaledAt(const TEX_XtraTexture *img, const int x, const int y, const int sw, const int sh);
+void RES_drawImageSectionAt(const TEX_XtraTexture *img, int x, int y, int cx, int cy, int cw, int ch);
+void RES_drawImageSectionScaledAt(const TEX_XtraTexture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
 
 void RES_drawTextureAt(SDL_Texture *img, const int x, const int y);
 void RES_drawTextureScaledAt(SDL_Texture *img, const int x, const int y, const int sw, const int sh);
@@ -112,8 +132,11 @@ void RES_drawStringWhite(const char *txt, const int pt, int x, const int y);
 
 void RES_setFPS(int fps);
 ///consumes thread, nearly infinite loop
-void RES_mainLoop(void (*gameProcessCallback)(void));
-
+void RES_mainLoop(void (*processCallback)(void));
+///meant to be put inside of an external loop
+///used for frame delay, event handling, and updating the screen
+void RES_pollingEventLoop();
+void RES_pollingGraphicsLoop();
 
 
 

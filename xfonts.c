@@ -1,3 +1,5 @@
+#include "2DBase_defines.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,28 +9,75 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "resources.h"
-#include "memorys.h"
 #include "xfonts.h"
 
-static MEM_Block *fonts = NULL;
+static FNT_MemDump *FNT_dump = NULL;
+static FNT_MemDump *FNT_first = NULL;
+static void FNT_X_initDump(){
+    if(FNT_dump==NULL){
+        FNT_dump = calloc(sizeof(FNT_MemDump),1);
+        FNT_first = FNT_dump;
+    }
+}
+static void FNT_X_freeDump(){
+    if(FNT_dump!=NULL){
+        FNT_MemDump *cur = FNT_first;
+        FNT_MemDump *next;
+        while(cur!=NULL && cur->node!=NULL){
+            next = cur->node;
+            if(cur->leaf!=NULL){
+                FNT_freeFont(cur->leaf);
+            }
+            free(cur);
+            cur = next;
+        }
+    }
+}
+static void FNT_X_addToDump(FNT_Font *font){
+    FNT_dump->leaf = font;
+    FNT_dump->node = calloc(sizeof(FNT_MemDump),1);
+    if(FNT_dump->node!=NULL){
+        FNT_dump = FNT_dump->node;
+    }else{
+        printf("||| MEMORY ERROR: could not calloc 1 FNT_MemDump\n");
+    }
+}
+
 static char cr = 255, cg = 255, cb = 255, ca = 255;
+
+
 FNT_FontType *FNT_defFont = NULL;
 int FNT_defPt = 12;
 int FNT_defEffects = 0;
 
+
+
 void FNT_init(){
+#if ALLOW_FONTS
     if(!TTF_WasInit()){
         if(TTF_Init() == -1){
             printf("Couldn't init SDL TTF\n");
         }
     }
-    MEM_freeBlock(fonts);
-    fonts = MEM_newBlock();
+#if ALLOW_FONTS_MEMORY_DUMP
+    FNT_X_initDump();
+#endif // ALLOW_FONTS_MEMORY_DUMP
+
+#endif // ALLOW_FONTS
 }
 
 void FNT_exit(){
+#if ALLOW_FONTS
+
+#if ALLOW_FONTS_MEMORY_DUMP
+    FNT_X_freeDump();
+#endif // ALLOW_FONTS_MEMORY_DUMP
+
     TTF_Quit();
-    MEM_freeBlock(fonts);
+
+#endif // ALLOW_FONTS
+
+
 }
 
 void FNT_setColor(char r, char g, char b, char a){
@@ -38,10 +87,9 @@ void FNT_setColor(char r, char g, char b, char a){
     ca = a;
 }
 
-void FNT_setFont(FNT_FontType *fontType){
+void FNT_setFontType(FNT_FontType *fontType){
     if(fontType != NULL){
         FNT_defFont = fontType;
-        FNT_defPt = fontType->pt;
     }
 }
 void FNT_setPt(int pt){
@@ -53,20 +101,6 @@ void FNT_setEffects(int effects){
     if(effects > -1){
         FNT_defEffects = effects;
     }
-}
-
-void FNT_drawText(char *text, int x, int y, int pt){
-    if(pt < 1){
-        pt = FNT_defPt;
-    }
-    FNT_XdrawText(text, FNT_defFont, x, y, pt, FNT_defEffects);
-}
-
-void FNT_drawText_kern(char *text, int x, int y, int pt){
-    if(pt < 1){
-        pt = FNT_defPt;
-    }
-    FNT_XdrawText_kern(text, FNT_defFont, x, y, pt, FNT_defEffects);
 }
 
 void FNT_XdrawText(char *text, FNT_FontType *type, int x, int y, int pt, int effects){
@@ -89,6 +123,7 @@ void FNT_XdrawText(char *text, FNT_FontType *type, int x, int y, int pt, int eff
         if(type->letters[(unsigned char)text[i]] != NULL){
             dest.w = (int)(scale * type->letters[(unsigned char)text[i]]->glyph->w);
             SDL_SetTextureColorMod(type->letters[(unsigned char)text[i]]->glyph->img, cr, cg, cb);
+            SDL_SetTextureAlphaMod(type->letters[(unsigned char)text[i]]->glyph->img, ca);
             RES_drawImageRect(type->letters[(unsigned char)text[i]]->glyph, NULL, &dest);
             dest.x += dest.w;
         }
@@ -116,6 +151,7 @@ void FNT_XdrawText_kern(char *text, FNT_FontType *type, int x, int y, int pt, in
         if(type->letters[(unsigned char)text[i]] != NULL){
             dest.w = (int)(scale * type->letters[(unsigned char)text[i]]->glyph->w);
             SDL_SetTextureColorMod(type->letters[(unsigned char)text[i]]->glyph->img, cr, cg, cb);
+            SDL_SetTextureAlphaMod(type->letters[(unsigned char)text[i]]->glyph->img, ca);
             if(type->letters[(unsigned char)text[i]] != NULL){
                 if(type->letters[last] != NULL){
                     dest.x += (int)(type->letters[last]->kernings[(unsigned char)text[i]] * scale);
@@ -131,35 +167,31 @@ void FNT_XdrawText_kern(char *text, FNT_FontType *type, int x, int y, int pt, in
     FNT_XdrawEffects(type, &dest, x, scale, effects);
 }
 
+///FIXME color does not change back correctly for some reason when drawing other thing
+///FIXME color shiould change back as it is break, not reutrn in no effects
 void FNT_XdrawEffects(FNT_FontType *type, SDL_Rect *dest, int x, float scale, int effects){
     Uint8 r = 0, g = 0, b = 0, a = 255;
     SDL_GetRenderDrawColor(RES_renderer, &r, &g, &b, &a);
     SDL_SetRenderDrawColor(RES_renderer, cr, cg, cb, ca);
     switch(effects){
-    case(FNT_PLAIN):
-        return;
-    case(FNT_UNDERLINE):
-        SDL_RenderDrawLine(RES_renderer, x, dest->y + (int)(type->baseline * scale), dest->x, dest->y + (int)(type->baseline * scale));
-        break;
-    case(FNT_STRIKEOUT):
-        SDL_RenderDrawLine(RES_renderer, x, dest->y + (int)(type->strikeline * scale), dest->x, dest->y + (int)(type->strikeline * scale));
-        break;
-    case(FNT_UNDERLINE|FNT_STRIKEOUT):
-        SDL_RenderDrawLine(RES_renderer, x, dest->y + (int)(type->strikeline * scale), dest->x, dest->y + (int)(type->strikeline * scale));
-        SDL_RenderDrawLine(RES_renderer, x, dest->y + (int)(type->baseline * scale), dest->x, dest->y + (int)(type->baseline * scale));;
+        case(FNT_PLAIN):
+            break;
+        case(FNT_UNDERLINE):
+            SDL_RenderDrawLine(RES_renderer, x, dest->y + (int)(type->baseline * scale), dest->x, dest->y + (int)(type->baseline * scale));
+            break;
+        case(FNT_STRIKEOUT):
+            SDL_RenderDrawLine(RES_renderer, x, dest->y + (int)(type->strikeline * scale), dest->x, dest->y + (int)(type->strikeline * scale));
+            break;
+        case(FNT_UNDERLINE|FNT_STRIKEOUT):
+            SDL_RenderDrawLine(RES_renderer, x, dest->y + (int)(type->strikeline * scale), dest->x, dest->y + (int)(type->strikeline * scale));
+            SDL_RenderDrawLine(RES_renderer, x, dest->y + (int)(type->baseline * scale), dest->x, dest->y + (int)(type->baseline * scale));
+            break;
     }
-    SDL_SetRenderDrawColor(RES_renderer, r, g, b, a);
+    SDL_SetRenderDrawColor(RES_renderer,r,g,b,a);
 }
 
 
 
-
-
-
-
-/*void FNT_newFontSpec(const char* plain, const char* italic, const char* bold, const char* boldItalic,int maxPt){
-
-}*/
 
 FNT_Font *FNT_newFont(const char *fontFile, int maxPt){
     if(maxPt < 1){
@@ -172,7 +204,7 @@ FNT_Font *FNT_newFont(const char *fontFile, int maxPt){
     TTF_Font *font = TTF_OpenFont(fontFile, maxPt);
     if(font == NULL){
         SDL_free(font);
-        printf("Could Not Load Font File\n");
+        //printf("Could Not Load Font File\n");
         return NULL;
     }
     FNT_FontType *bold = FNT_newFontType(font, TTF_STYLE_BOLD, maxPt);
@@ -210,7 +242,9 @@ FNT_Font *FNT_newFont(const char *fontFile, int maxPt){
     ffont->italic = italic;
     ffont->boldItalic = boldItalic;
     ffont->font = font;
-    MEM_addDataTo(fonts, ffont, FNT_freeFont);
+#if ALLOW_FONTS_MEMORY_DUMP
+    FNT_X_addToDump(ffont);
+#endif // ALLOW_FONTS_MEMORY_DUMP
     return ffont;
 }
 
@@ -227,16 +261,14 @@ FNT_FontType *FNT_newFontType(TTF_Font *font, int style, int maxPt){
     for(i = 32; i < 127; i++){
         ftype->letters[i] = FNT_newLetter(font, (char)i);
         if(ftype->letters[i] == NULL){
-            printf("NULL LETTER ");
+            //printf("NULL LETTER ");
         } else if(ftype->letters[i]->glyph == NULL){
-            printf("NULL GLYPH ");
+            //printf("NULL GLYPH ");
         }
     }
     int topline = -TTF_FontAscent(font);//from top of font to baseline
     int baseline = -topline;
     int strikeline = baseline * 2 / 3;
-    //int baseline = TTF_FontAscent(font);
-    //int strikeline = baseline*2/3;
     int linespace = TTF_FontLineSkip(font);
     SDL_Color dump;
     SDL_Surface *tmp = TTF_RenderGlyph_Blended(font, 'A', dump);
@@ -251,18 +283,6 @@ FNT_FontType *FNT_newFontType(TTF_Font *font, int style, int maxPt){
     for(i = 32; i < 127; i++){
         FNT_calcLetterSpace(font, ftype, ftype->letters[i], '\0' + i);
     }
-    /**int gHeight = rendered->h;
-
-    int baseline = TTF_FontAscent(font);
-    int strikeline = baseline*2/3;
-    int linespace = TTF_FontLineSkip(font);
-
-    ftype->baseline = baseline;
-    ftype->linespace = linespace;
-    ftype->strikeline = strikeline;
-    ftype->pt = maxPt;
-    ftype->letter.w=0;ftype->letter.h=xtex->h;
-    ftype->letter.x=0;ftype->letter.y=0;*/
     return ftype;
 }
 
@@ -283,7 +303,7 @@ FNT_Letter *FNT_newLetter(TTF_Font *font, char letter){
         //printf("TTF ERROR \n");
         return NULL;
     }
-    XtraTexture *xglyph = TEX_newXtraTexture(glyph);
+    TEX_XtraTexture *xglyph = TEX_newXtraTexture(glyph);
     if(xglyph == NULL){
         SDL_free(letr);
         //printf("GLYPH ERROR\n");
@@ -292,15 +312,6 @@ FNT_Letter *FNT_newLetter(TTF_Font *font, char letter){
     letr->glyph = xglyph;
     //*/
     SDL_FreeSurface(glyph);
-    /*int i;
-    for(i = 0; i < 256; i++){
-        letr->kernings[i] = TTF_GetFontKerningSizeGlyphs(font,(Uint16)letter,(Uint16)('\0'+i));
-    }*/
-    /*if(TTF_GlyphMetrics(font, letter, NULL, NULL, NULL, &(letr->down), NULL)){
-        TEX_freeXtraTexture(xglyph);
-        SDL_free(letr);
-        return NULL;
-    }*/
     return letr;
 }
 
@@ -324,41 +335,32 @@ void FNT_calcLetterSpace(TTF_Font *font, FNT_FontType *cache, FNT_Letter *store,
     }
 }
 
-void FNT_freeFont(void *font){
-    FNT_Font *fontt = (FNT_Font *)font;
-    FNT_freeFontType(fontt->bold);
-    FNT_freeFontType(fontt->plain);
-    FNT_freeFontType(fontt->italic);
-    FNT_freeFontType(fontt->boldItalic);
-    if(fontt->font != NULL){
-        TTF_CloseFont(fontt->font);
+void FNT_freeFont(FNT_Font *font){
+    FNT_freeFontType(font->bold);
+    FNT_freeFontType(font->plain);
+    FNT_freeFontType(font->italic);
+    FNT_freeFontType(font->boldItalic);
+    if(font->font != NULL){
+        TTF_CloseFont(font->font);
     }
-    SDL_free(fontt);
+    SDL_free(font);
 }
 
-void FNT_freeFontType(FNT_FontType *fontt){
-    if(fontt == NULL){
+void FNT_freeFontType(FNT_FontType *font){
+    if(font == NULL){
         return;
     }
     int i;
     for(i = 0; i < 256; i++){
-        FNT_freeLetter(fontt->letters[i]);
+        FNT_freeLetter(font->letters[i]);
     }
-    SDL_free(fontt);
+    SDL_free(font);
 }
 
 void FNT_freeLetter(FNT_Letter *letter){
     if(letter == NULL){
         return;
     }
-    /*if(letter->glyph==NULL){
-        printf("FREE ERROR ");
-    }
-    if(letter==NULL){
-        printf("LETTER ERROR ");
-    }else{
-        printf("GLYPH %p ",letter->glyph);
-    }*/
     TEX_freeXtraTexture(letter->glyph);
     SDL_free(letter);
 }

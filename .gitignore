@@ -54,3 +54,6 @@ dkms.conf
 #codeblocks
 *.depend
 *.layout
+
+#folders
+bin/
