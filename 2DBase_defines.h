@@ -16,12 +16,14 @@ in order to remove crashes made by missing .so or .dll files that are not requir
 ///This is in effort to minimize changes made to isolate components
 ///as long as the internal functions are used to manage the data
 
+#define BASE_AUDIO_QUALITY AUD_QUALITY_GAME
+
 #define ALLOW_RESOURCES 1
 #define ALLOW_RESOURCES_MEMORY_DUMP 1
 
 #define ALLOW_EVENTS 1
 #define ALLOW_EVENTS_MEMORY_DUMP 1
-#define ALLOW_EVENTS_WIPING_ON_SWITCH 1
+#define ALLOW_EVENTS_WIPING_ON_SWITCH 0
 
 #define ALLOW_TINY_FONT 1
 #define ALLOW_FONTS 1

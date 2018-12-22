@@ -27,6 +27,8 @@ void externalLoop(){
 }
 
 void oldMain(){
+    RES_initFull();
+    RES_setFPS(25);
     RES_setWindowSize(800,600);
     RES_setWindowTitle("Example");
     RES_initWindow();
@@ -34,6 +36,8 @@ void oldMain(){
 }
 
 void newMain(){
+    RES_init();
+    RES_setFPS(25);
     RES_newState("Example", 800,600);
     RES_showWindow();
 }
@@ -41,12 +45,9 @@ void newMain(){
 int main(int argc, char *argv[])
 {
 
-    RES_initFull();
-    RES_setFPS(25);
-
     //oldMain();
     newMain();
-
+    SDL_Log("SIZE_OF_STATE: %i\n",sizeof(RES_ResourceState));
     //callbackLoop();
     externalLoop();
     ///process will end and return to here as final execution, most commonly only RES_exit() for cleanup

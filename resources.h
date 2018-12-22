@@ -9,6 +9,11 @@
 
 #include "textury.h"
 
+///Temporary backwards compatibilities
+#define RES_initFull RES_init
+
+
+
 #define RES_setWindowTitle(title) SDL_SetWindowTitle(RES_window,title)
 #define RES_setWindowSize(w, h) SDL_SetWindowSize(RES_window,w,h)
 #define RES_centerWindow() SDL_SetWindowPosition(RES_window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED)
@@ -98,16 +103,19 @@ void RES_resizeScreen2(const int width, const int height);
 void RES_updateWindowTextureFromSurfaceToTexture(SDL_Texture *screen_texture, SDL_Surface *screen, SDL_Renderer *renderer);
 
 void RES_setColor(const int r, const int g, const int b, const int a);
-void RES_setColorInt(const int rgba);
+void RES_setColorRGBA(const int rgba);
+void RES_setColorARGB(const int argb);
 
 void RES_drawRect(const int x, const int y, const int w, const int h);
 void RES_fillRect(const int x, const int y, const int w, const int h);
+void RES_drawRect2(const SDL_Rect *rect);
+void RES_fillRect2(const SDL_Rect *rect);
 
 void RES_drawImageRect(const TEX_XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place);
 
 void RES_drawImageAt(const TEX_XtraTexture *img, const int x, const int y);
 void RES_drawImageScaledAt(const TEX_XtraTexture *img, const int x, const int y, const int sw, const int sh);
-void RES_drawImageSectionAt(const TEX_XtraTexture *img, int x, int y, int cx, int cy, int cw, int ch);
+void RES_drawImageSectionAt(const TEX_XtraTexture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch);
 void RES_drawImageSectionScaledAt(const TEX_XtraTexture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
 
 void RES_drawTextureAt(SDL_Texture *img, const int x, const int y);
@@ -116,6 +124,12 @@ void RES_drawTextureSectionAt(SDL_Texture *img, const int x, const int y, const 
 void RES_drawTextureSectionScaledAt(SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch);
 
 int RES_inRect(const int x, const int y, const int w, const int h, const int pointx, const int pointy);
+
+
+
+RES_ResourceState* RES_saveState();
+void RES_newState(const char *title, const int width, const int height);
+void RES_loadState(const RES_ResourceState *windowState);
 
 
 
@@ -130,9 +144,9 @@ void RES_drawStringWhite(const char *txt, const int pt, int x, const int y);
 
 
 
-void RES_setFPS(int fps);
+void RES_setFPS(const int fps);
 ///consumes thread, nearly infinite loop
-void RES_mainLoop(void (*processCallback)(void));
+void RES_mainLoop(const void (*processCallback)(void));
 ///meant to be put inside of an external loop
 ///used for frame delay, event handling, and updating the screen
 void RES_pollingEventLoop();

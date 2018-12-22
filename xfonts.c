@@ -87,6 +87,13 @@ void FNT_setColor(char r, char g, char b, char a){
     ca = a;
 }
 
+void FNT_setColorRGBA(const int rgba){
+    FNT_setColor((rgba >> 24) & 0xFF, (rgba >> 16) & 0xFF, (rgba >> 8) & 0xFF, rgba & 0xFF);
+}
+void FNT_setColorARGB(const int argb){
+    FNT_setColor((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, (argb >> 24) & 0xFF);
+}
+
 void FNT_setFontType(FNT_FontType *fontType){
     if(fontType != NULL){
         FNT_defFont = fontType;

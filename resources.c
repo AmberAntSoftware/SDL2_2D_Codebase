@@ -13,9 +13,9 @@
 #include "textury.h"
 #include "xfonts.h"
 
-static RES_ResourceState *storedState;
-static Uint32 lastFrameStore=0;
-static Uint32 currentFrameStore=0;
+static RES_ResourceState *RES_X_storedState = NULL;
+static Uint32 RES_X_lastFrameStore=0;
+static Uint32 RES_X_currentFrameStore=0;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 const Uint32 RES_RMASK = 0xff000000;
@@ -51,8 +51,6 @@ Uint32 RES_SCREEN_HEIGHT = 600;
 Uint8 RES_running = 1;
 Uint8 RES_FPS = 0;
 
-Uint32 RES_currentWindow = 1;
-
 int RES_initSDL(){
     if(!SDL_WasInit(SDL_INIT_EVERYTHING)){
 #if WIN32
@@ -61,7 +59,7 @@ int RES_initSDL(){
         if(SDL_Init(SDL_INIT_EVERYTHING) == -1){
             RES_exitProcessErr("Could not initialize SDL");
         }
-        if(AUD_initAudio(AUD_QUALITY_GAME)){
+        if(AUD_initAudio(BASE_AUDIO_QUALITY)){
             printf("Could not initialize SDL_Mixer Audio\n");
         }
         if(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_TIF /*|IMG_INIT_WEBP*/) == -1){
@@ -72,10 +70,6 @@ int RES_initSDL(){
 }
 
 int RES_init(){
-    RES_initFull();
-}
-
-int RES_initFull(){
     RES_initSDL();
     TEX_init();
     FNT_init();
@@ -134,7 +128,10 @@ RES_ResourceState* RES_saveState(){
 void RES_newState(const char *title, int width, int height){
     ///TODO FIXME
     ///save any non null data into a state to free later
-    RES_ResourceState *newState = calloc(sizeof(RES_ResourceState),1);
+    if(RES_X_storedState==NULL||RES_X_storedState->window!=RES_window||RES_X_storedState->renderer!=RES_renderer){
+        ///RES_saveState();
+    }
+    ///RES_ResourceState *newState = calloc(sizeof(RES_ResourceState),1);
     //
     //
 }
@@ -151,7 +148,7 @@ void RES_loadState(RES_ResourceState *windowState){
     RES_screen = windowState->screen;
     RES_texture = windowState->texture;
     RES_window = windowState->window;
-    storedState = windowState;
+    RES_X_storedState = windowState;
 }
 
 
@@ -263,8 +260,11 @@ void RES_resizeScreen2(const int width, const int height){
 void RES_setColor(const int r, const int g, const int b, const int a){
     SDL_SetRenderDrawColor(RES_renderer, r, g, b, a);
 }
-void RES_setColorInt(const int rgba){
-    SDL_SetRenderDrawColor(RES_renderer, (rgba >> 24) & 0xFF, (rgba >> 16) & 0xFF, (rgba >> 8) & 0xFF, rgba & 0xFF);
+void RES_setColorRGBA(const int rgba){
+    RES_setColor((rgba >> 24) & 0xFF, (rgba >> 16) & 0xFF, (rgba >> 8) & 0xFF, rgba & 0xFF);
+}
+void RES_setColorARGB(const int argb){
+    RES_setColor((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, (argb >> 24) & 0xFF);
 }
 void RES_drawRect(const int x, const int y, const int w, const int h){
     SDL_Rect r;
@@ -274,6 +274,9 @@ void RES_drawRect(const int x, const int y, const int w, const int h){
     r.h = h;
     SDL_RenderDrawRect(RES_renderer, &r);
 }
+void RES_drawRect2(const SDL_Rect *rect){
+    SDL_RenderDrawRect(RES_renderer, rect);
+}
 void RES_fillRect(const int x, const int y, const int w, const int h){
     SDL_Rect r;
     r.x = x;
@@ -281,6 +284,9 @@ void RES_fillRect(const int x, const int y, const int w, const int h){
     r.w = w;
     r.h = h;
     SDL_RenderFillRect(RES_renderer, &r);
+}
+void RES_fillRect2(const SDL_Rect *rect){
+    SDL_RenderFillRect(RES_renderer, rect);
 }
 
 
@@ -425,6 +431,12 @@ int RES_inRect(const int x, const int y, const int w, const int h, const int poi
 
 
 
+
+
+
+
+
+
 void RES_setFPS(int fps){
     if(fps > 1000){
         fps = 1001;
@@ -464,11 +476,11 @@ void RES_pollingGraphicsLoop(){
 
     RES_updateWindow();
 
-    currentFrameStore = SDL_GetTicks();
-    if((currentFrameStore - lastFrameStore) < (1000 / RES_FPS) + 1){
-        SDL_Delay((1000 / RES_FPS) - (currentFrameStore - lastFrameStore));
+    RES_X_currentFrameStore = SDL_GetTicks();
+    if((RES_X_currentFrameStore - RES_X_lastFrameStore) < (1000 / RES_FPS) + 1){
+        SDL_Delay((1000 / RES_FPS) - (RES_X_currentFrameStore - RES_X_lastFrameStore));
     }
 
-    lastFrameStore = SDL_GetTicks();
+    RES_X_lastFrameStore = SDL_GetTicks();
 
 }

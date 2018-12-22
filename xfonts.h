@@ -85,6 +85,8 @@ void FNT_XdrawEffects(FNT_FontType *type, SDL_Rect *dest, int x, float scale, in
 //void FNT_drawText_kern(char *text,FNT_FontType *type, int x, int y, int pt, int effect);
 
 void FNT_setColor(char r, char g, char b, char a);
+void FNT_setColorRGBA(const int rgba);
+void FNT_setColorARGB(const int argb);
 void FNT_setFontType(FNT_FontType *fontType);
 void FNT_setPt(int pt);
 void FNT_setEffects(int effects);

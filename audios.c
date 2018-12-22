@@ -6,13 +6,13 @@
 
 #include "audios.h"
 
-int AUD_SFXvolume = 100;
+static int AUD_X_SFXvolume = 100;
 
-static AUD_SFXCache *sfxCache = NULL;
-static AUD_SFXCache *lastCache = NULL;
+static AUD_SFX_MemDump *sfxCache = NULL;
+static AUD_SFX_MemDump *lastCache = NULL;
 
-static AUD_MusicCache *musicCache = NULL;
-static AUD_MusicCache *mlastCache = NULL;
+static AUD_Music_MemDump *musicCache = NULL;
+static AUD_Music_MemDump *mlastCache = NULL;
 
 int AUD_initAudio(int audioQuality){
     int flags=MIX_INIT_OGG|MIX_INIT_FLAC|MIX_INIT_MP3;
@@ -81,14 +81,14 @@ void AUD_exit(){
 }
 
 
-AUD_Music* AUD_newMusic(char* mp3OggFlac){
+AUD_Music* AUD_newMusic(const char* mp3OggFlac_File){
 
-    Mix_Music *music = Mix_LoadMUS(mp3OggFlac);
+    Mix_Music *music = Mix_LoadMUS(mp3OggFlac_File);
     if(music==NULL){
         return NULL;
     }
 
-    AUD_MusicCache *cache = SDL_malloc(sizeof(AUD_MusicCache));
+    AUD_Music_MemDump *cache = SDL_malloc(sizeof(AUD_Music_MemDump));
     if(cache==NULL){
         Mix_FreeMusic(music);
         return NULL;
@@ -109,14 +109,14 @@ AUD_Music* AUD_newMusic(char* mp3OggFlac){
     return (AUD_Music*)music;
 }
 
-AUD_SFX* AUD_newSFX(char* wavOggAiffRiffVOC){
+AUD_SFX* AUD_newSFX(const char* wavOggAiffRiffVOC_File){
 
-    Mix_Chunk *sfx = Mix_LoadWAV(wavOggAiffRiffVOC);
+    Mix_Chunk *sfx = Mix_LoadWAV(wavOggAiffRiffVOC_File);
     if(sfx==NULL){
         return NULL;
     }
 
-    AUD_SFXCache *cache = SDL_malloc(sizeof(AUD_SFXCache));
+    AUD_SFX_MemDump *cache = SDL_malloc(sizeof(AUD_SFX_MemDump));
     if(cache==NULL){
         Mix_FreeChunk(sfx);
         return NULL;
@@ -137,9 +137,9 @@ AUD_SFX* AUD_newSFX(char* wavOggAiffRiffVOC){
 
 }
 
-void AUD_setSFXVolume(int zero128){
+void AUD_setSFXVolume(const int zero128){
     if(zero128>-1&&zero128<129){
-        AUD_SFXvolume = zero128;
+        AUD_X_SFXvolume = zero128;
     }
 }
 
@@ -147,7 +147,7 @@ void AUD_playSFX(AUD_SFX *sfx){
     if(sfx==NULL){
         return;
     }
-    Mix_VolumeChunk(sfx,AUD_SFXvolume);
+    Mix_VolumeChunk(sfx,AUD_X_SFXvolume);
     Mix_PlayChannel( -1, sfx, 0 );
 }
 
