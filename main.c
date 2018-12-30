@@ -1,7 +1,5 @@
 #include "2DBase_defines.h"
 
-#include "stringys.h"
-
 RES_ResourceState *window1 = NULL;
 RES_ResourceState *window2 = NULL;
 RES_ResourceState *window3 = NULL;

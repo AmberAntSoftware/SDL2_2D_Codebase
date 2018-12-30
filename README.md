@@ -26,15 +26,19 @@ How To Start
 #include "textury.h"
 #include "xfonts.h"
 ```
+2b) This can be optional and made by default by allowing all headers to be included through
+```
+#include "2DBase_defines.h"
+```
 
-3) The main function -- currently no other init besides RES_initFull()
+3) The main function 
 ```
 int main(int argc, char *argv[])
 {
     //call this to init everything and SDL
-    RES_initFull();
+    RES_init();
     
-    //... whatever you want to do here, probably setup your window
+    //... whatever you want to do here, probably setup your window/resource state
     
     //frees resources and exits program cleanly
     RES_exit();
@@ -57,7 +61,7 @@ Set the window size -- X,Y
 RES_setWindowSize(800,600);
 ```
 
-Center it after setting the size, otherwise will be off-center
+Center it after setting the size, otherwise it will be off-center
 ```
 RES_centerWindow();
 ```
@@ -82,7 +86,7 @@ on the thread calling this -- do note that you should only call this on the same
 thread that you called RES_initFull() on*/
 
 void graphicsLoop(){
-//... stuff
+//... render code
 }
 ```
 
@@ -99,7 +103,7 @@ Taking input on every frame for the keyboard
 EVT_getKey(SDLK_{KEY})
 //returns nonzero if pressed and deletes pressed state
 EVT_consumeKey(SDLK_{KEY})
-//Directly Access key state nonzero if pressed -- no bounding protections
+//Directly Access key state nonzero if pressed -- no protections
 EVT_key[SDLK_{KEY}]
 
 //Directly get the last key pressed
@@ -126,7 +130,7 @@ EVT_getLastButton()
 //returns last button and deletes it -- convience function
 EVT_consumeLastButton()
 ```
-Taking input on every frame for the mouse position -- no functions yet, only unsafe direct integer access
+Taking input on every frame for the mouse position -- no functions yet, only direct integer access
 ```
 //x point at which mouse pointer was moved last
 RES_mx
@@ -141,7 +145,7 @@ RES_py
 Taking input on every frame for the mouse wheel
 ```
 /*Currently, SDL only takes directional integers, so smooth scrolling of 
-less than 1, is not supported -- e.g a precision of four where .25 .5 .75 1 
+less than 1, is not supported -- e.g a precision of four where .25 .5 .75
 exist -- float values are rounded to zero*/
 
 /**A value of zero means no scroll**/
@@ -161,6 +165,8 @@ Graphical Examples
 Set the drawing color
 ```
 RES_setColor(r,g,b,a)
+RES_setColorRGBA(RGBA(RES_YELLOW));
+RES_setColorARGB(ARGB(RES_YELLOW));
 ```
 
 Rectangles
@@ -169,6 +175,10 @@ Rectangles
 RES_drawRect(x,y,width,height)
 //rectangle with fill
 RES_fillRect(x,y,width,height)
+
+//Mirrors for direct rectangle drawing (minorly faster)
+void RES_drawRect2(const SDL_Rect *rect);
+void RES_fillRect2(const SDL_Rect *rect);
 ```
 
 Lines
@@ -176,7 +186,7 @@ Lines
 RES_drawLine(x1,y1,x2,y2)
 ```
 
-Images -- Must be an XtraTexture container to use these [texture functions not yet implemented]
+Images -- Must be a TEX_XtraTexture container to use these [texture functions are mirrored]
 ```
 //draws the image at the location with native resolution
 void RES_drawImageAt(img, x, y);
@@ -185,7 +195,9 @@ void RES_drawImageScaledAt(img, x, y, width, height);
 //draws a section of image at the specified location at native resolution
 void RES_drawImageSectionAt(img, x, y, clipBoxX, clipBoxY, clipBoxWidth, clipBoxHeight);
 //draws a section of image at location scaled to a rectangle of width and height
-void RES_drawImageSectionScaledAt(img, x, y, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+void RES_drawImageSectionScaledAt(img, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+//draws directly using rectangles instead of literals
+RES_drawImageRect(img, src_clip, dest_place)
 ```
 
 
@@ -199,13 +211,13 @@ Full Working Example
 #include "resources.h"
 #include "events.h"
 #include "audios.h"
-#include "memorys.h"
 #include "textury.h"
 #include "xfonts.h"
 
 int cx = 0;
 int cy = 0;
 int size = 20;
+RES_ResourceState *window1 = NULL;
 
 //moves a square around on the screen using wasd
 void notAGame(){
@@ -232,11 +244,9 @@ void notAGame(){
 
 int main(int argc, char *argv[])
 {
-    RES_initFull();
-    
-    RES_initFull();
-    RES_setWindowTitle("THING");
-    RES_setWindowSize(800,600);
+    RES_init();
+	
+	window1 = RES_newState("THING",787,496);
     RES_centerWindow();
     RES_showWindow();
     
