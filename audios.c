@@ -14,8 +14,12 @@ static AUD_SFX_MemDump *lastCache = NULL;
 static AUD_Music_MemDump *musicCache = NULL;
 static AUD_Music_MemDump *mlastCache = NULL;
 
-int AUD_initAudio(int audioQuality){
-    int flags=MIX_INIT_OGG|MIX_INIT_FLAC|MIX_INIT_MP3;
+int AUD_init(int audioQuality){
+    return AUD_initAudio(audioQuality,MIX_INIT_OGG|MIX_INIT_FLAC|MIX_INIT_MP3);
+}
+
+int AUD_initAudio(int audioQuality, int audioFlags){
+    int flags=audioFlags;
     int initted=Mix_Init(flags);
     if((initted&flags) != flags){
         printf("Mix_Init: Failed to init required ogg, flac, mp3 support!\n");

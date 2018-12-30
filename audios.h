@@ -30,14 +30,15 @@ typedef struct AUD_Music_MemDump{
     struct AUD_Music_MemDump *next;
 }AUD_Music_MemDump;
 
-int AUD_initAudio(int audioQuality);
+int AUD_init(int audioQuality);
+int AUD_initAudio(int audioQuality, int audioFlags);
 void AUD_exit();
 
 AUD_SFX* AUD_newSFX(const char* wavOggAiffRiffVOC_File);
 AUD_Music* AUD_newMusic(const char* mp3OggFlac_File);
 
-void AUD_playSFX(const AUD_SFX *sfx);
-void AUD_playMusic(const AUD_Music *music);
+void AUD_playSFX(AUD_SFX *sfx);
+void AUD_playMusic(AUD_Music *music);
 void AUD_setSFXVolume(const int zero128);
 
 #endif // AUDIOS_H_INCLUDED

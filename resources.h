@@ -8,9 +8,11 @@
 #include <SDL2/SDL_image.h>
 
 #include "textury.h"
+#include "preutils.h"
 
 ///Temporary backwards compatibilities
 #define RES_initFull RES_init
+
 
 
 
@@ -28,10 +30,10 @@
 #define RES_drawImageScaledAtR(imgPtr, rectPointer) RES_drawImageScaledAt(imgPtr, rectPointer->x, rectPointer->y, rectPointer->w, rectPointer->h)
 #define RES_drawTextureScaledAtR(texPtr, rectPointer) RES_drawTextureScaledAt(texPtr, rectPointer->x, rectPointer->y, rectPointer->w, rectPointer->h)
 
-typedef struct RES_MemDump{
-    struct TEX_MemDump *node;
-    struct RES_ResourceState *leaf;
-} RES_MemDump;
+
+
+
+MemoryDumpStrucure(RES_MemDump,RES_ResourceState);
 
 typedef struct RES_ResourceState {
 
@@ -47,11 +49,12 @@ typedef struct RES_ResourceState {
     Uint8 FPS;
 
 } RES_ResourceState;
+#define RES_isStateUsable(RES_ResourceStatePtr) (RES_ResourceStatePtr!=NULL && RES_ResourceStatePtr->window!=NULL)
 
-SDL_Surface *RES_fontRAW;
-SDL_Texture *RES_font;
-SDL_Texture *RES_fontWhite;
 
+
+#define RGBA(RGB) ((num<<8)|0xFF)
+#define ARGB(RGB) (0xFFFFFFFF|num)
 const Uint32 RES_WHITE;
 const Uint32 RES_BLACK;
 const Uint32 RES_GREEN;
@@ -127,26 +130,19 @@ int RES_inRect(const int x, const int y, const int w, const int h, const int poi
 
 
 
+void RES_removeStateFromDump(RES_ResourceState *state);
 RES_ResourceState* RES_saveState();
-void RES_newState(const char *title, const int width, const int height);
-void RES_loadState(const RES_ResourceState *windowState);
+RES_ResourceState* RES_newState(const char *title, const int width, const int height);
+void RES_loadState(RES_ResourceState *windowState);
+void RES_freeState(RES_ResourceState *windowState);
 
 
 
-
-///DEPRECATED SET
-void RES_setStringColor(const int r, const int g, const int b, const int a);
-void RES_setStringColorInt(const int rgba);
-void RES_drawString(const char *txt, const int pt, int x, const int y);
-void RES_drawStringWhite(const char *txt, const int pt, int x, const int y);
-
-
-
-
+void RES_updateAllWindowStates();
 
 void RES_setFPS(const int fps);
 ///consumes thread, nearly infinite loop
-void RES_mainLoop(const void (*processCallback)(void));
+void RES_mainLoop(void (*processCallback)(void));
 ///meant to be put inside of an external loop
 ///used for frame delay, event handling, and updating the screen
 void RES_pollingEventLoop();
@@ -154,7 +150,7 @@ void RES_pollingGraphicsLoop();
 
 
 
-int RES_initAudio();
+//int RES_initAudio();
 /*int RES_thread_BGM_num;
 char RES_thread_BGM_args[][64];*/
 

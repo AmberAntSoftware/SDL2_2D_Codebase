@@ -11,6 +11,11 @@
 #include "resources.h"
 #include "xfonts.h"
 
+#include "preutils.h"
+
+MemoryDumpStaticLocals(FNT_MemDump,FNT_freeFont,FNT_Font,FNT_X_initDump,FNT_X_freeDump,FNT_X_addToDump,FNT_X_removeFromDump);
+
+/*
 static FNT_MemDump *FNT_dump = NULL;
 static FNT_MemDump *FNT_first = NULL;
 static void FNT_X_initDump(){
@@ -42,6 +47,34 @@ static void FNT_X_addToDump(FNT_Font *font){
         printf("||| MEMORY ERROR: could not calloc 1 FNT_MemDump\n");
     }
 }
+
+static void FNT_X_removeFromDump(FNT_Font *font){
+    if(FNT_dump!=NULL){
+        FNT_MemDump *cur = FNT_first;
+        FNT_MemDump *next;
+        FNT_MemDump *pre = FNT_first;
+        int hold = 0;
+        while(cur!=NULL){
+            if(hold==0){
+                hold++;
+            }else{
+                pre=pre->node;
+            }
+            next = cur->node;
+            if(cur->leaf!=NULL && font==cur->leaf){
+                FNT_freeFont(cur->leaf);
+                if(cur==FNT_first){
+                    FNT_first=next;
+                }else{
+                    pre->node=next;
+                }
+                free(cur);
+                return;
+            }
+            cur = next;
+        }
+    }
+}*/
 
 static char cr = 255, cg = 255, cb = 255, ca = 255;
 
@@ -174,8 +207,6 @@ void FNT_XdrawText_kern(char *text, FNT_FontType *type, int x, int y, int pt, in
     FNT_XdrawEffects(type, &dest, x, scale, effects);
 }
 
-///FIXME color does not change back correctly for some reason when drawing other thing
-///FIXME color shiould change back as it is break, not reutrn in no effects
 void FNT_XdrawEffects(FNT_FontType *type, SDL_Rect *dest, int x, float scale, int effects){
     Uint8 r = 0, g = 0, b = 0, a = 255;
     SDL_GetRenderDrawColor(RES_renderer, &r, &g, &b, &a);

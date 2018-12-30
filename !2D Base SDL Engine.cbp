@@ -36,6 +36,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="./preutils.h" />
 		<Unit filename="2DBase_defines.h" />
 		<Unit filename="audios.c">
 			<Option compilerVar="CC" />

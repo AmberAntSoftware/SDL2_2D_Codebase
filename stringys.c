@@ -4,11 +4,7 @@
 
 #include <SDL2/SDL.h>
 
-#include <SDL2/SDL.h>
-
-#include "resources.h"
-
-char* STR_concat(char* str0, char* str1){
+char* STR_concat(const char* str0, const char* str1){
 
     int len0 = SDL_strlen(str0);
     int len1 = SDL_strlen(str1);
@@ -26,31 +22,31 @@ char* STR_concat(char* str0, char* str1){
 
 }
 
-char* STR_concatf0(char* str0_toFree, char* str1){
+char* STR_concatf0(char* str0_toFree, const char* str1){
     char *buffer = NULL;
     buffer = STR_concat(str0_toFree,str1);
 
-    SDL_free(str0_toFree);
+    free(str0_toFree);
 
     return buffer;
 
 }
 
-char* STR_concatf2(char* str0, char* str1_toFree){
+char* STR_concatf1(const char* str0, char* str1_toFree){
     char *buffer = NULL;
     buffer = STR_concat(str0,str1_toFree);
 
-    SDL_free(str1_toFree);
+    free(str1_toFree);
 
     return buffer;
 }
 
-char* STR_concatf3(char* str0_toFree, char* str1_toFree){
+char* STR_concatf2(char* str0_toFree, char* str1_toFree){
     char *buffer = NULL;
     buffer = STR_concat(str0_toFree,str1_toFree);
 
-    SDL_free(str0_toFree);
-    SDL_free(str1_toFree);
+    free(str0_toFree);
+    free(str1_toFree);
 
     return buffer;
 }
@@ -71,7 +67,7 @@ char* STR_concatAll(int char_pointer_count, ...){
 
     int i;
     for(i = 0; i < char_pointer_count;i++){
-        buffer = STR_concatf3(buffer,va_arg ( params, char* ));
+        buffer = STR_concatf2(buffer,va_arg ( params, char* ));
     }
     ///
     va_end(params);
@@ -80,4 +76,39 @@ char* STR_concatAll(int char_pointer_count, ...){
 }
 
 
+char* STR_concatAllTermination(int nothing, ...){
 
+    int limit = 1<<29;
+
+    int termCount = 0;
+    char *terminations[4] = {NULL,NULL+1,NULL+2,NULL};
+
+    char *buffer;
+    buffer = SDL_malloc(sizeof(char));
+    if(buffer==NULL){
+        return NULL;
+    }
+    buffer[0] = '\0';
+
+    va_list params;
+    va_start(params, limit);
+    ///
+
+    int i;
+    for(i = 0; i < limit;i++){
+        char *arg = va_arg ( params, char* );
+        if(terminations[termCount]==arg){
+            termCount++;
+            if(termCount>4){
+                break;
+            }
+        }else{
+            termCount=0;
+            buffer = STR_concatf2(buffer,arg);
+        }
+    }
+    ///
+    va_end(params);
+
+    return buffer;
+}

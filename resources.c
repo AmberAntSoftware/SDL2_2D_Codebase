@@ -12,10 +12,48 @@
 #include "audios.h"
 #include "textury.h"
 #include "xfonts.h"
+#include "stringys.h"
 
 static RES_ResourceState *RES_X_storedState = NULL;
 static Uint32 RES_X_lastFrameStore=0;
 static Uint32 RES_X_currentFrameStore=0;
+
+RES_ResourceState *RES_NO_WINDOW = NULL;
+
+MemoryDumpStaticLocals(RES_MemDump,RES_freeState,RES_ResourceState,RES_X_initDump,RES_X_freeDump,RES_X_addToDump,RES_X_removeFromDump);
+
+static int RES_X_appendWindowState(RES_ResourceState *newState){
+    if(newState==NULL){
+        return -1;
+    }
+    int exists = 0;
+    char ibuff[20];
+    char *nbuff = NULL;
+    int i = -1;
+    void *data = NULL;
+    do{
+        i++;
+        SDL_itoa(i,&(ibuff[0]),10);
+        if(nbuff!=NULL){
+            free(nbuff);
+        }
+        nbuff = STR_concat((char*)"state",&(ibuff[0]));
+        data = SDL_GetWindowData(RES_window,nbuff);
+        if(data==(void*)newState){
+            exists = 1;
+            break;
+        }
+        //SDL_Log("Window: %p   DATA: %p | %i     AT: %s\n",RES_window, data,i, nbuff);
+    }while(data!=NULL);
+    if(nbuff!=NULL){
+        if(newState!=NULL&&!exists){
+            SDL_SetWindowData(RES_window,nbuff,newState);
+            RES_ResourceState *test = SDL_GetWindowData(RES_window,nbuff);
+        }
+        free(nbuff);
+    }
+    return i;
+}
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 const Uint32 RES_RMASK = 0xff000000;
@@ -29,21 +67,21 @@ const Uint32 RES_BMASK = 0x00ff0000;
 const Uint32 RES_AMASK = 0xff000000;
 #endif
 
-const Uint32 RES_WHITE = 0xFFFFFFFF;
-const Uint32 RES_BLACK = 0x000000FF;
-const Uint32 RES_GREEN = 0x00FF00FF;
-const Uint32 RES_RED = 0xFF0000FF;
-const Uint32 RES_BLUE = 0x0000FFFF;
-const Uint32 RES_YELLOW = 0xFFFF00FF;
-const Uint32 RES_MAGENTA = 0xFFFF00FF;
-const Uint32 RES_CYAN = 0x00FFFFFF;
+const Uint32 RES_WHITE = 0xFFFFFF;
+const Uint32 RES_BLACK = 0x000000;
+const Uint32 RES_GREEN = 0x00FF00;
+const Uint32 RES_RED = 0xFF0000;
+const Uint32 RES_BLUE = 0x0000FF;
+const Uint32 RES_YELLOW = 0xFFFF00;
+const Uint32 RES_MAGENTA = 0xFFFF00;
+const Uint32 RES_CYAN = 0x00FFFF;
 
 SDL_Event RES_event;
-SDL_Window *RES_window;
-SDL_Surface *RES_screen;
-SDL_Renderer *RES_renderer;
-SDL_Texture *RES_texture;
-volatile Uint32 *RES_pixels;
+SDL_Window *RES_window = NULL;
+SDL_Surface *RES_screen = NULL;
+SDL_Renderer *RES_renderer = NULL;
+SDL_Texture *RES_texture = NULL;
+volatile Uint32 *RES_pixels = NULL;
 
 Uint32 RES_SCREEN_WIDTH = 800;
 Uint32 RES_SCREEN_HEIGHT = 600;
@@ -59,7 +97,7 @@ int RES_initSDL(){
         if(SDL_Init(SDL_INIT_EVERYTHING) == -1){
             RES_exitProcessErr("Could not initialize SDL");
         }
-        if(AUD_initAudio(BASE_AUDIO_QUALITY)){
+        if(AUD_init(BASE_AUDIO_QUALITY)){
             printf("Could not initialize SDL_Mixer Audio\n");
         }
         if(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_TIF /*|IMG_INIT_WEBP*/) == -1){
@@ -73,16 +111,47 @@ int RES_init(){
     RES_initSDL();
     TEX_init();
     FNT_init();
-    if(RES_initWindow()){
-        RES_exitProcessErr("Could not Initialize SDL Window [Full]");
-        return -1;
-    }
-    if(RES_initResources()){
-        RES_exitProcessErr("Could not Initialize SDL [Full]");
-        return -1;
-    }
+    //#if ALLOW_RESOURCES_MEMORY_DUMP
+    RES_X_initDump();
+    //#endif
     return 0;
 }
+
+void RES_exitProcessDef(const char *msg){
+    printf("%s\n", msg);
+    exit(0);
+}
+
+void RES_exitProcessErr(const char *msg){
+    printf("%s\n", msg);
+    exit(-1);
+}
+
+void RES_exit(){
+    RES_cleanup();
+    TEX_exit();
+    AUD_exit();
+    FNT_exit();
+
+    SDL_Quit();
+}
+
+void RES_cleanup(){
+    RES_running = 0;
+    //#if ALLOW_RESOURCES_MEMORY_DUMP
+    RES_X_freeDump();
+    //#endif
+    //quit SDL
+    //SDL_Quit();
+}
+
+
+
+
+
+
+
+
 
 int RES_initResources(){
     // create screen surface
@@ -112,8 +181,51 @@ int RES_initWindow(){
     return 0;
 }
 
+
+
+
+
+
+void RES_removeStateFromDump(RES_ResourceState *state){
+    if(state==NULL){
+        return;
+    }
+
+    /*RES_MemDump *loop = DMP_X_X_first;
+    while(loop!=NULL){
+        SDL_Log("PREEXISTS: %p\n",loop->leaf);
+        loop=loop->node;
+    }
+    SDL_Log("PRE_FirstValue: %p\n",DMP_X_X_first);
+    SDL_Log("ATTEMPT_REMOVE: %p\n",state);*/
+
+    RES_X_removeFromDump(state);
+    if(DMP_X_X_first==NULL){
+        RES_running = 0;
+    }
+    /*SDL_Log("FirstValue: %p\n",DMP_X_X_first);
+    loop = DMP_X_X_first;
+    while(loop!=NULL){
+            SDL_Log("EXISTS: %p\n",loop->leaf);
+        loop=loop->node;
+
+    }*/
+}
+
 RES_ResourceState* RES_saveState(){
-    RES_ResourceState *curState = calloc(sizeof(RES_ResourceState),1);
+    int exists = 0;
+    RES_ResourceState *curState = NULL;
+    if(RES_X_storedState!=NULL&&RES_X_storedState->window==RES_window){
+        exists = 1;
+    }
+    if(exists){
+        curState = RES_X_storedState;
+    }else{
+        if(RES_window==NULL||RES_renderer==NULL){
+            return NULL;
+        }
+        curState = calloc(sizeof(RES_ResourceState),1);
+    }
     curState->FPS = RES_FPS;
     curState->renderer = RES_renderer;
     curState->running = RES_running;
@@ -122,18 +234,55 @@ RES_ResourceState* RES_saveState(){
     curState->SCREEN_HEIGHT = RES_SCREEN_HEIGHT;
     curState->texture = RES_texture;
     curState->window = RES_window;
+    if(!exists){
+        RES_X_appendWindowState(curState);
+        RES_X_addToDump(curState);
+    }
+    RES_X_storedState = curState;
     return curState;
 }
 
-void RES_newState(const char *title, int width, int height){
-    ///TODO FIXME
-    ///save any non null data into a state to free later
-    if(RES_X_storedState==NULL||RES_X_storedState->window!=RES_window||RES_X_storedState->renderer!=RES_renderer){
-        ///RES_saveState();
+RES_ResourceState* RES_newState(const char *title, const int width, const int height){
+
+    RES_ResourceState *revert = NULL;
+    int needRevert = 0;
+    needRevert = 0;
+    revert = RES_saveState();
+
+    RES_ResourceState *newState = NULL;
+
+    if(RES_initWindow()){
+        SDL_Log("Could not Initialize SDL Window [Full]\n");
+        needRevert = 1;
+    }else{
+        SDL_SetWindowSize(RES_window,width,height);
+        SDL_SetWindowTitle(RES_window,title);
+        newState = RES_saveState();
+        RES_X_appendWindowState(newState);
     }
-    ///RES_ResourceState *newState = calloc(sizeof(RES_ResourceState),1);
+    if(RES_initResources()){
+        SDL_Log("Could not Initialize SDL [Full]\n");
+        needRevert = 1;
+    }
+
+    if(needRevert==1){
+        if(revert!=NULL){
+            RES_loadState(revert);
+        }else if(RES_X_storedState!=NULL){
+            RES_loadState(RES_X_storedState);
+        }
+        RES_freeState(newState);
+        free(newState);
+        newState = NULL;
+    }else{
+        RES_X_addToDump(newState);
+        RES_X_storedState = newState;
+    }
+
+    RES_saveState();
+
     //
-    //
+    return newState;
 }
 
 void RES_loadState(RES_ResourceState *windowState){
@@ -151,53 +300,40 @@ void RES_loadState(RES_ResourceState *windowState){
     RES_X_storedState = windowState;
 }
 
-
-
-void RES_exitProcessDef(const char *msg){
-    printf("%s\n", msg);
-    exit(0);
-}
-
-void RES_exitProcessErr(const char *msg){
-    printf("%s\n", msg);
-    exit(-1);
-}
-
-void RES_exit(){
-    RES_cleanup();
-    AUD_exit();
-    RES_running = 0;
-    SDL_Quit();
-}
-
-void RES_cleanup(){
-    //free randoms
-    TEX_exit();
+void RES_freeState(RES_ResourceState *windowState){
+    if(windowState==NULL){
+        return;
+    }
+    ///free randoms
+    ///TEX_exit(); TODO go through and remove anything that matches the RES_renderer pointer
+    TEX_freeTexturesByRenderer(windowState->renderer);
     // free image
-    if(RES_screen != NULL){
-        SDL_FreeSurface(RES_screen);
+    if(windowState->screen != NULL){
+        SDL_FreeSurface(windowState->screen);
     }
-    if(RES_fontRAW != NULL){
-        SDL_FreeSurface(RES_fontRAW);
+    if(windowState->texture != NULL){
+        SDL_DestroyTexture(windowState->texture);
     }
-    // free image texture
-    if(RES_texture != NULL){
-        SDL_DestroyTexture(RES_texture);
+    if(windowState->renderer != NULL){
+        SDL_DestroyRenderer(windowState->renderer);
     }
-    if(RES_font != NULL){
-        SDL_DestroyTexture(RES_font);
+    if(windowState->window != NULL){
+        SDL_HideWindow(windowState->window);
+        SDL_DestroyWindow(windowState->window);
+        windowState->window=NULL;
     }
-    // free renderer
-    if(RES_renderer != NULL){
-        SDL_DestroyRenderer(RES_renderer);
-    }
-    // free window
-    if(RES_window != NULL){
-        SDL_DestroyWindow(RES_window);
-    }
-    //quit SDL
-    //SDL_Quit();
 }
+
+
+
+
+
+
+
+
+
+
+
 
 void RES_updateWindowTextureFromSurfaceToTexture(SDL_Texture *screen_texture, SDL_Surface *screen, SDL_Renderer *renderer){
     //update screen texture
@@ -385,45 +521,6 @@ void RES_drawTextureSectionScaledAt(SDL_Texture *img, const int x, const int y, 
 
 
 
-void RES_drawString(const char *txt, const int pt, int x, int y){
-    SDL_Rect ltr;
-    ltr.x = 0;
-    ltr.y = 0;
-    ltr.w = 5;
-    ltr.h = 5;
-    SDL_Rect whr;
-    whr.x = x;
-    whr.y = y;
-    whr.w = pt;
-    whr.h = pt;
-    Uint32 length = SDL_strlen(txt), i;
-    for(i = 0; i < length; i++){
-        ltr.y = 5 * (txt[i] & 0xFF);
-        SDL_RenderCopy(RES_renderer, RES_font, &ltr, &whr);
-        //SDL_RenderCopy()
-        whr.x += pt + pt / 10;
-    }
-}
-
-void RES_drawStringWhite(const char *txt, const int pt, int x, int y){
-    SDL_Rect ltr;
-    ltr.x = 0;
-    ltr.y = 0;
-    ltr.w = 5;
-    ltr.h = 5;
-    SDL_Rect whr;
-    whr.x = x;
-    whr.y = y;
-    whr.w = pt;
-    whr.h = pt;
-    Uint32 length = SDL_strlen(txt), i;
-    for(i = 0; i < length; i++){
-        ltr.y = 5 * (txt[i] & 0xFF);
-        SDL_RenderCopy(RES_renderer, RES_fontWhite, &ltr, &whr);
-        //SDL_RenderCopy()
-        whr.x += pt + pt / 10;
-    }
-}
 
 int RES_inRect(const int x, const int y, const int w, const int h, const int pointx, const int pointy){
     return pointx > x && pointx < x + w && pointy > y && pointy < y + h;
@@ -436,11 +533,24 @@ int RES_inRect(const int x, const int y, const int w, const int h, const int poi
 
 
 
+void RES_updateAllWindowStates(){
+    RES_ResourceState *current = RES_saveState();
 
-void RES_setFPS(int fps){
-    if(fps > 1000){
-        fps = 1001;
+    RES_MemDump *loop = DMP_X_X_first;
+    while(loop!=NULL){
+        if(loop!=NULL&&loop->leaf!=NULL){
+            if(loop->leaf->window!=NULL&&loop->leaf->renderer!=NULL&&loop->leaf->texture!=NULL){
+                RES_loadState(loop->leaf);
+                RES_updateWindow();
+            }
+        }
+        loop = loop->node;
     }
+
+    RES_loadState(current);
+}
+
+void RES_setFPS(const int fps){
     if(fps < 1){
         return;
     }
@@ -457,6 +567,9 @@ void RES_mainLoop(void (*processCallback)(void)){
     while(RES_running){
         last = SDL_GetTicks();
         EVT_EventHandler(&EVT_event, RES_window);
+
+        RES_updateAllWindowStates();
+
         if(processCallback != NULL){
             processCallback();
         }
@@ -474,7 +587,7 @@ void RES_pollingEventLoop(){
 
 void RES_pollingGraphicsLoop(){
 
-    RES_updateWindow();
+    RES_updateAllWindowStates();
 
     RES_X_currentFrameStore = SDL_GetTicks();
     if((RES_X_currentFrameStore - RES_X_lastFrameStore) < (1000 / RES_FPS) + 1){

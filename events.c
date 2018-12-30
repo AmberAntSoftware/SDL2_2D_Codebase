@@ -7,7 +7,69 @@
 #include "resources.h"
 #include "events.h"
 
+
 static Uint32 lastWindow = 1;
+
+
+static int EVT_X_deleteWindowStates(const SDL_Event *event){
+    char ibuff[20];
+    char *nbuff = NULL;
+    int i = -1, j;
+    void *data = NULL;
+    void *freed[128];
+    for(j=0;j<128;j++){
+        freed[j]=NULL;
+    }
+    SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
+    if(window==NULL){
+        return -1;
+    }
+    do{
+        i++;
+        SDL_itoa(i,&(ibuff[0]),10);
+        if(nbuff!=NULL){
+            free(nbuff);
+        }
+        nbuff = STR_concat((char*)"state",&(ibuff[0]));
+        data = SDL_GetWindowData(window,nbuff);
+        if(data!=NULL){
+            for(j=0;j<128;j++){
+                if(freed[j]==NULL){
+                    freed[j]=data;
+                    break;
+                }
+                if(freed[j]==data){
+                    break;
+                }
+            }
+        }
+    }while(data!=NULL);
+    if(nbuff!=NULL){
+        free(nbuff);
+    }
+    for(j=0;j<128;j++){
+        if(freed[j]!=NULL){
+            RES_ResourceState *state = (RES_ResourceState*)freed[j];
+            TEX_freeTexturesByRenderer(state->renderer);
+            RES_removeStateFromDump(state);
+        }else{
+            break;
+        }
+    }
+    return i;
+}
+
+static void EVT_X_handleExit(const SDL_Event* event, SDL_Window *window){
+    //Handle quit requests (like Ctrl-c). [LINUX Terminal Exit]
+    EVT_X_deleteWindowStates(event);
+    /*
+    if(lastWindow==event->window.windowID){
+        //RES_running = 0;
+    }
+    //RES_exit();
+    //RES_exitProcessDef("Exiting SDL\n");
+    */
+}
 
 static void EVT_ifWindowChanged(Uint32 eventWindow){
     if(eventWindow==lastWindow){
@@ -34,6 +96,10 @@ static void EVT_ifWindowChanged(Uint32 eventWindow){
 #endif // ALLOW_EVENTS_WIPING_ON_SWITCH
 }
 
+
+
+
+
 SDL_Event EVT_event;
 Uint8 EVT_key[MAX_EVENT_CACHE];
 Uint8 EVT_btn[MAX_EVENT_CACHE];
@@ -49,6 +115,7 @@ Sint32 EVT_lastButton = -1;
 
 
 void EVT_EventHandler(SDL_Event *event, const SDL_Window *window){
+    int siz;
     while(SDL_PollEvent(event)){
         EVT_ifWindowChanged(event->window.windowID);
 
@@ -62,13 +129,8 @@ void EVT_EventHandler(SDL_Event *event, const SDL_Window *window){
             EVT_keyReleaseEvent(event, window);
             break;
         case SDL_QUIT:
-            //Handle quit requests (like Ctrl-c). [LINUX Terminal Exit]
-            if(lastWindow==event->window.windowID){
-                RES_running = 0;
-            }
-            ///RES_exit();
-            ///RES_exitProcessDef("Exiting SDL\n");
-            break;
+            EVT_X_handleExit(event,window);
+            return;
         case SDL_MOUSEMOTION:
             //printf("Mouse Move\n");
             EVT_mouseMoveEvent(event, window);
@@ -328,9 +390,7 @@ void EVT_windowEvent(const SDL_Event *event, const SDL_Window *window){
         /*if(SDL_GetWindowID(EVT_window)==event->window.windowID){
             RES_running = 0;
         }*/
-        if(lastWindow==event->window.windowID){
-            RES_running = 0;
-        }
+        EVT_X_handleExit(event,window);
         break;
 #if SDL_VERSION_ATLEAST(2, 0, 5)
     case SDL_WINDOWEVENT_TAKE_FOCUS:
