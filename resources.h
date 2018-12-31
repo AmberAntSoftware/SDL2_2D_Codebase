@@ -53,8 +53,9 @@ typedef struct RES_ResourceState {
 
 
 
-#define RGBA(RGB) ((num<<8)|0xFF)
-#define ARGB(RGB) (0xFFFFFFFF|num)
+#define RGBA(RGB) ((RGB<<8) | 0xFF)
+#define ARGB(RGB) (0xFFFFFFFF | RGB)
+
 const Uint32 RES_WHITE;
 const Uint32 RES_BLACK;
 const Uint32 RES_GREEN;
