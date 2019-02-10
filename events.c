@@ -6,6 +6,7 @@
 
 #include "resources.h"
 #include "events.h"
+#include "stringys.h"
 
 
 static Uint32 lastWindow = 1;
@@ -30,7 +31,7 @@ static int EVT_X_deleteWindowStates(const SDL_Event *event){
         if(nbuff!=NULL){
             free(nbuff);
         }
-        nbuff = STR_concat((char*)"state",&(ibuff[0]));
+        nbuff = STR_concat((char*)"state",ibuff);
         data = SDL_GetWindowData(window,nbuff);
         if(data!=NULL){
             for(j=0;j<128;j++){
@@ -59,7 +60,7 @@ static int EVT_X_deleteWindowStates(const SDL_Event *event){
     return i;
 }
 
-static void EVT_X_handleExit(const SDL_Event* event, SDL_Window *window){
+static void EVT_X_handleExit(const SDL_Event* event, const SDL_Window *window){
     //Handle quit requests (like Ctrl-c). [LINUX Terminal Exit]
     EVT_X_deleteWindowStates(event);
     /*
@@ -115,7 +116,6 @@ Sint32 EVT_lastButton = -1;
 
 
 void EVT_EventHandler(SDL_Event *event, const SDL_Window *window){
-    int siz;
     while(SDL_PollEvent(event)){
         EVT_ifWindowChanged(event->window.windowID);
 

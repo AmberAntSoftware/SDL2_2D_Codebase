@@ -57,3 +57,5 @@ dkms.conf
 
 #folders
 bin/
+_Planned_Resources/
+lib/pkgconfig/

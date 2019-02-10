@@ -18,6 +18,7 @@ in order to remove crashes made by missing .so or .dll files that are not requir
 
 #define BASE_AUDIO_QUALITY AUD_QUALITY_GAME
 
+#define ALLOW_AUTO_DETECT_RENDER 0
 #define ALLOW_RESOURCES 1
 #define ALLOW_RESOURCES_MEMORY_DUMP 1
 

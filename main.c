@@ -11,17 +11,20 @@ void graphicalDrawingLoop(){
         RES_loadState(window1);
         RES_setColor(0,200,0,255);
         RES_fillRect(0,0,RES_SCREEN_WIDTH,RES_SCREEN_HEIGHT);
+        printf("WIN1\n");
     }
 
     if(RES_isStateUsable(window2)){
         RES_loadState(window2);
-        RES_setColor(0,255,0,255);
+        //RES_setColor(0,255,0,255);
+        RES_setColorARGB(ARGB(RGB(0,255,0)));
         RES_fillRect(0,0,RES_SCREEN_WIDTH,RES_SCREEN_HEIGHT);
     }
 
     if(RES_isStateUsable(window3)){
         RES_loadState(window3);
-        RES_setColor(0,150,100,255);
+        //RES_setColor(0,150,100,255);
+        RES_setColorRGBA(RGBA(RGB(0,150,100)));
         RES_fillRect(0,0,RES_SCREEN_WIDTH,RES_SCREEN_HEIGHT);
     }
 
@@ -54,7 +57,7 @@ void externalLoop(){
     }
 }
 
-//This will compile, but due to how states work and how the init function changed, this will do nothing and potentially crash
+/*
 void oldMain(){
 
     RES_initFull();
@@ -66,19 +69,27 @@ void oldMain(){
 
     callbackLoop();
 
+    RES_exit();
 }
-
+*/
+#include "gui/components.h"
 void newMain(){
 
     RES_init();
-    RES_setFPS(25);
+    RES_setFPS(10);
     window1 = RES_newState("Example", 800,600);
+    RES_attachState(&window1);
+    //printf("Location: %p     Pointed: %p    STATED: %p\n",&window1, window1, &window1);
+    //printf("GUI_COMPONENT_SIZE: %i\n",sizeof(GUI_Element));
     RES_showWindow();
-    window2 = RES_newState("Example2", 300,600);
+    window2 = RES_newState_softwareRender("Example2", 300,600);
+    RES_attachState(&window2);
     RES_showWindow();
-    window3 = RES_newState("Example3", 400,400);
+    window3 = RES_newState_alwaysOnTop("Example3", 400,400);
+    RES_attachState(&window3);
     RES_showWindow();
-    window4 = RES_newState("Example4", 500,200);
+    window4 = RES_newState_alwaysOnTop_softwareRender("Example4", 500,200);
+    RES_attachState(&window4);
     RES_showWindow();
 
     externalLoop();

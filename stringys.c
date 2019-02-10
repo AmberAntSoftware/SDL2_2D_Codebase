@@ -76,9 +76,9 @@ char* STR_concatAll(int char_pointer_count, ...){
 }
 
 
-char* STR_concatAllTermination(int nothing, ...){
+char* STR_concatAllTermination(int limit, ...){
 
-    int limit = 1<<29;
+    limit = 1<<29;
 
     int termCount = 0;
     char *terminations[4] = {NULL,NULL+1,NULL+2,NULL};

@@ -15,7 +15,6 @@
 
 
 
-
 #define RES_setWindowTitle(title) SDL_SetWindowTitle(RES_window,title)
 #define RES_setWindowSize(w, h) SDL_SetWindowSize(RES_window,w,h)
 #define RES_centerWindow() SDL_SetWindowPosition(RES_window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED)
@@ -37,6 +36,8 @@ MemoryDumpStrucure(RES_MemDump,RES_ResourceState);
 
 typedef struct RES_ResourceState {
 
+    struct RES_ResourceState **storedLocation;
+
     SDL_Window *window;
     SDL_Surface *screen;
     SDL_Renderer *renderer;
@@ -47,14 +48,16 @@ typedef struct RES_ResourceState {
 
     Uint8 running;
     Uint8 FPS;
+    Uint8 dirtyRenderer;
 
 } RES_ResourceState;
+void RES_attachState(RES_ResourceState **namedStatePointerLocation);
 #define RES_isStateUsable(RES_ResourceStatePtr) (RES_ResourceStatePtr!=NULL && RES_ResourceStatePtr->window!=NULL)
 
 
-
+#define RGB(r,g,b) ((0x00000000) |(r<<16) | (g<<8) | b)
 #define RGBA(RGB) ((RGB<<8) | 0xFF)
-#define ARGB(RGB) (0xFFFFFFFF | RGB)
+#define ARGB(RGB) ((0xFF<<24) | RGB)
 
 const Uint32 RES_WHITE;
 const Uint32 RES_BLACK;
@@ -81,13 +84,13 @@ Uint32 RES_SCREEN_HEIGHT;
 
 Uint8 RES_running;
 Uint8 RES_FPS;
-
+Uint8 RES_dirtyRenderer;
 Uint32 RES_currentWindow;
 
 int RES_init();
 int RES_initFull();
 
-int RES_initWindow();
+int RES_initWindow(const int SDL_WINDOW_FLAGS, const int SDL_RENDERER_FLAGS);
 /*void RES_setWindowTitle();
 void RES_setWindowSize();
 void RES_centerWindow();
@@ -133,7 +136,12 @@ int RES_inRect(const int x, const int y, const int w, const int h, const int poi
 
 void RES_removeStateFromDump(RES_ResourceState *state);
 RES_ResourceState* RES_saveState();
-RES_ResourceState* RES_newState(const char *title, const int width, const int height);
+#define RES_newState(titleCharPtr, width, height) RES_newStateX(titleCharPtr, width, height, (int)NULL, (int)NULL)
+#define RES_newState_softwareRender(titleCharPtr, width, height) RES_newStateX(titleCharPtr, width, height, (int)NULL, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE)
+#define RES_newState_alwaysOnTop(titleCharPtr, width, height) RES_newStateX(titleCharPtr, width, height, SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE,(int)NULL)
+#define RES_newState_alwaysOnTop_softwareRender(titleCharPtr, width, height) RES_newStateX(titleCharPtr, width, height, SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE)
+RES_ResourceState* RES_newStateX(const char *title, const int width, const int height, const int SDL_WINDOW_FLAGS, const int SDL_RENDERER_FLAGS);
+//#define RES_attachStaticState(resourceStatePtr, locatedStatePtr) (resourceStatePtr->storedLocation = (& locatedStatePtr) );
 void RES_loadState(RES_ResourceState *windowState);
 void RES_freeState(RES_ResourceState *windowState);
 

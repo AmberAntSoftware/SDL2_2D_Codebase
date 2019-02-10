@@ -48,7 +48,6 @@ static int RES_X_appendWindowState(RES_ResourceState *newState){
     if(nbuff!=NULL){
         if(newState!=NULL&&!exists){
             SDL_SetWindowData(RES_window,nbuff,newState);
-            RES_ResourceState *test = SDL_GetWindowData(RES_window,nbuff);
         }
         free(nbuff);
     }
@@ -88,6 +87,7 @@ Uint32 RES_SCREEN_HEIGHT = 600;
 
 Uint8 RES_running = 1;
 Uint8 RES_FPS = 0;
+Uint8 RES_dirtyRenderer = 0;
 
 int RES_initSDL(){
     if(!SDL_WasInit(SDL_INIT_EVERYTHING)){
@@ -167,14 +167,15 @@ int RES_initResources(){
     return 0;
 }
 
-int RES_initWindow(){
-    RES_window = SDL_CreateWindow("Window 0", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+int RES_initWindow(const int SDL_WINDOW_FLAGS, const int SDL_RENDERER_FLAGS){
+    RES_window = SDL_CreateWindow("Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                   RES_SCREEN_WIDTH, RES_SCREEN_HEIGHT,
-                                  SDL_WINDOW_RESIZABLE
+                                  //SDL_WINDOW_RESIZABLE
                                   //|SDL_WINDOW_SHOWN
-                                  | SDL_WINDOW_HIDDEN
+                                  //| SDL_WINDOW_HIDDEN
+                                  SDL_WINDOW_FLAGS
                                  );
-    RES_renderer = SDL_CreateRenderer(RES_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    RES_renderer = SDL_CreateRenderer(RES_window, -1, SDL_RENDERER_FLAGS/*SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE*/);
     SDL_SetTextureBlendMode(RES_texture, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawBlendMode(RES_renderer, SDL_BLENDMODE_BLEND);
     ///SDL_ShowWindow(RES_window);
@@ -234,6 +235,9 @@ RES_ResourceState* RES_saveState(){
     curState->SCREEN_HEIGHT = RES_SCREEN_HEIGHT;
     curState->texture = RES_texture;
     curState->window = RES_window;
+#if ALLOW_AUTO_DETECT_RENDER
+    curState->dirtyRenderer = RES_dirtyRenderer;
+#endif // ALLOW_AUTO_DETECT_RENDER
     if(!exists){
         RES_X_appendWindowState(curState);
         RES_X_addToDump(curState);
@@ -242,7 +246,18 @@ RES_ResourceState* RES_saveState(){
     return curState;
 }
 
-RES_ResourceState* RES_newState(const char *title, const int width, const int height){
+RES_ResourceState* RES_newStateX(const char *title, const int width, const int height, const int SDL_WINDOW_FLAGS, const int SDL_RENDERER_FLAGS){
+
+    int windowFlags = SDL_WINDOW_FLAGS;
+    int rendererFlags = SDL_RENDERER_FLAGS;
+
+    if(windowFlags==0){
+        windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
+    }
+
+    if(rendererFlags==0){
+        rendererFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
+    }
 
     RES_ResourceState *revert = NULL;
     int needRevert = 0;
@@ -251,7 +266,7 @@ RES_ResourceState* RES_newState(const char *title, const int width, const int he
 
     RES_ResourceState *newState = NULL;
 
-    if(RES_initWindow()){
+    if(RES_initWindow(windowFlags, rendererFlags)){
         SDL_Log("Could not Initialize SDL Window [Full]\n");
         needRevert = 1;
     }else{
@@ -286,6 +301,11 @@ RES_ResourceState* RES_newState(const char *title, const int width, const int he
 }
 
 void RES_loadState(RES_ResourceState *windowState){
+#if ALLOW_AUTO_DETECT_RENDER
+    if(RES_X_storedState!=NULL){
+        RES_X_storedState->dirtyRenderer = RES_dirtyRenderer;
+    }
+#endif // ALLOW_AUTO_DETECT_RENDER
     int w = 0;
     int h = 0;
     SDL_GetWindowSize(windowState->window,&w,&h);
@@ -298,6 +318,10 @@ void RES_loadState(RES_ResourceState *windowState){
     RES_texture = windowState->texture;
     RES_window = windowState->window;
     RES_X_storedState = windowState;
+}
+
+void RES_attachState(RES_ResourceState **namedStatePointerLocation){
+    (*namedStatePointerLocation)->storedLocation = namedStatePointerLocation;
 }
 
 void RES_freeState(RES_ResourceState *windowState){
@@ -321,6 +345,11 @@ void RES_freeState(RES_ResourceState *windowState){
         SDL_HideWindow(windowState->window);
         SDL_DestroyWindow(windowState->window);
         windowState->window=NULL;
+    }
+
+    if(windowState->storedLocation!=NULL){
+        windowState->storedLocation = NULL;
+        //printf("KILLED: %p   VALUE: %p\n",&windowState->storedLocation,windowState->storedLocation);
     }
 }
 
@@ -403,6 +432,9 @@ void RES_setColorARGB(const int argb){
     RES_setColor((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF, (argb >> 24) & 0xFF);
 }
 void RES_drawRect(const int x, const int y, const int w, const int h){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -411,9 +443,15 @@ void RES_drawRect(const int x, const int y, const int w, const int h){
     SDL_RenderDrawRect(RES_renderer, &r);
 }
 void RES_drawRect2(const SDL_Rect *rect){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_RenderDrawRect(RES_renderer, rect);
 }
 void RES_fillRect(const int x, const int y, const int w, const int h){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -422,15 +460,24 @@ void RES_fillRect(const int x, const int y, const int w, const int h){
     SDL_RenderFillRect(RES_renderer, &r);
 }
 void RES_fillRect2(const SDL_Rect *rect){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_RenderFillRect(RES_renderer, rect);
 }
 
 
 void RES_drawImageRect(const TEX_XtraTexture *img, const SDL_Rect *src_clip, const SDL_Rect *dest_place){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_RenderCopy(RES_renderer, img->img, src_clip, dest_place);
 }
 
 void RES_drawImageAt(const TEX_XtraTexture *img, const int x, const int y){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -440,6 +487,9 @@ void RES_drawImageAt(const TEX_XtraTexture *img, const int x, const int y){
 }
 
 void RES_drawImageScaledAt(const TEX_XtraTexture *img, const int x, const int y, const int sw, const int sh){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -449,6 +499,9 @@ void RES_drawImageScaledAt(const TEX_XtraTexture *img, const int x, const int y,
 }
 
 void RES_drawImageSectionAt(const TEX_XtraTexture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect s, r;
     r.x = x;
     r.y = y;
@@ -462,6 +515,9 @@ void RES_drawImageSectionAt(const TEX_XtraTexture *img, const int x, const int y
 }
 
 void RES_drawImageSectionScaledAt(const TEX_XtraTexture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect s, r;
     r.x = x;
     r.y = y;
@@ -477,6 +533,9 @@ void RES_drawImageSectionScaledAt(const TEX_XtraTexture *img, const int x, const
 
 
 void RES_drawTextureAt(SDL_Texture *img, const int x, const int y){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -485,6 +544,9 @@ void RES_drawTextureAt(SDL_Texture *img, const int x, const int y){
 }
 
 void RES_drawTextureScaledAt(SDL_Texture *img, const int x, const int y, const int sw, const int sh){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect r;
     r.x = x;
     r.y = y;
@@ -494,6 +556,9 @@ void RES_drawTextureScaledAt(SDL_Texture *img, const int x, const int y, const i
 }
 
 void RES_drawTextureSectionAt(SDL_Texture *img, const int x, const int y, const int cx, const int cy, const int cw, const int ch){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect s, r;
     r.x = x;
     r.y = y;
@@ -507,6 +572,9 @@ void RES_drawTextureSectionAt(SDL_Texture *img, const int x, const int y, const 
 }
 
 void RES_drawTextureSectionScaledAt(SDL_Texture *img, const int x, const int y, const int sw, const int sh, const int cx, const int cy, const int cw, const int ch){
+#if ALLOW_AUTO_DETECT_RENDER
+    RES_dirtyRenderer = 1;
+#endif // ALLOW_AUTO_DETECT_RENDER
     SDL_Rect s, r;
     r.x = x;
     r.y = y;
@@ -540,8 +608,17 @@ void RES_updateAllWindowStates(){
     while(loop!=NULL){
         if(loop!=NULL&&loop->leaf!=NULL){
             if(loop->leaf->window!=NULL&&loop->leaf->renderer!=NULL&&loop->leaf->texture!=NULL){
+#if ALLOW_AUTO_DETECT_RENDER
+                if(loop->leaf->dirtyRenderer!=0){
+                    RES_loadState(loop->leaf);
+                    RES_dirtyRenderer = 0;
+                    RES_updateWindow();loop->leaf->dirtyRenderer = 0;
+                    printf("UPDAED\n");
+                }
+#else
                 RES_loadState(loop->leaf);
                 RES_updateWindow();
+#endif // ALLOW_AUTO_DETECT_RENDER
             }
         }
         loop = loop->node;

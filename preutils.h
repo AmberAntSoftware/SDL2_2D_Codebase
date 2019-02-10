@@ -35,8 +35,6 @@ static void AddDataName (LeafType *data){\
     if(DMP_X_X_first!=NULL){\
         MemoryDumpStructureType *cur = DMP_X_X_first;\
         MemoryDumpStructureType *next;\
-        MemoryDumpStructureType *pre = cur;\
-        int hold = 0;\
         while(cur!=NULL){\
             next = cur->node;\
             if(cur!=NULL&&cur->leaf==data){\

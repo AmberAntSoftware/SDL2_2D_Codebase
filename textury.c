@@ -17,7 +17,6 @@ void TEX_freeTexturesByRenderer(SDL_Renderer *renderer){
     if(DMP_X_X_first!=NULL){
         TEX_MemDump *cur = DMP_X_X_first;
         TEX_MemDump *next;
-        int hold = 0;
         while(cur!=NULL){
             next = cur->node;
             if(cur->leaf!=NULL && renderer==cur->leaf->renderer){

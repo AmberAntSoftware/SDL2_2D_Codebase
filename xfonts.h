@@ -58,8 +58,8 @@ void FNT_exit();
 
 #define FNT_drawText(text, x, y) {FNT_XdrawText(text, FNT_defFont, x, y, FNT_defPt, FNT_defEffects);}
 #define FNT_drawText_kern(text, x, y) {FNT_XdrawText_kern(text, FNT_defFont, x, y, FNT_defPt, FNT_defEffects);}
-#define FNT_drawText(textPtr, x, y, pt) {FNT_XdrawText(textPtr, FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_defEffects);}
-#define FNT_drawText_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr, FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_defEffects);}
+#define FNT_drawText_pt(textPtr, x, y, pt) {FNT_XdrawText(textPtr, FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_defEffects);}
+#define FNT_drawText_pt_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr, FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_defEffects);}
 
 #define FNT_drawText_underline(textPtr, x, y) {FNT_XdrawText(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_UNDERLINE);}
 #define FNT_drawText_underline_kern(textPtr, x, y) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_UNDERLINE);}
@@ -68,12 +68,12 @@ void FNT_exit();
 #define FNT_drawText_strike_underline(textPtr, x, y) {FNT_XdrawText(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_STRIKEOUT|FNT_UNDERLINE);}
 #define FNT_drawText_strike_underline_kern(textPtr, x, y) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, FNT_defPt, FNT_STRIKEOUT|FNT_UNDERLINE);}
 
-#define FNT_drawText_underline(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_UNDERLINE);}
-#define FNT_drawText_underline_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_UNDERLINE);}
-#define FNT_drawText_strike(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT);}
-#define FNT_drawText_strike_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT);}
-#define FNT_drawText_strike_underline(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT|FNT_UNDERLINE);}
-#define FNT_drawText_strike_underline_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT|FNT_UNDERLINE);}
+#define FNT_drawText_pt_underline(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_UNDERLINE);}
+#define FNT_drawText_pt_underline_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_UNDERLINE);}
+#define FNT_drawText_pt_strike(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT);}
+#define FNT_drawText_pt_strike_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT);}
+#define FNT_drawText_pt_strike_underline(textPtr, x, y, pt) {FNT_XdrawText(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT|FNT_UNDERLINE);}
+#define FNT_drawText_pt_strike_underline_kern(textPtr, x, y, pt) {FNT_XdrawText_kern(textPtr,FNT_defFont, x, y, pt < 1 ? FNT_defPt : pt, FNT_STRIKEOUT|FNT_UNDERLINE);}
 
 
 
